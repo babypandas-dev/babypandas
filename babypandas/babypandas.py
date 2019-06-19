@@ -44,7 +44,7 @@ class DataFrame(object):
         # List of Pandas DataFrame methods to be made "public".
         _dunder_attrs = ['__repr__', '_repr_html_']
         _props = ['shape', 'columns', 'index', 'values', 'T']
-        _selection = ['take', 'drop', 'sample']
+        _selection = ['take', 'drop', 'sample', 'get']
         _creation = ['assign']
         _transformation = ['apply', 'sort_values', 'describe']
         _combining = ['merge', 'append']
