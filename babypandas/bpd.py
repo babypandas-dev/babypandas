@@ -77,7 +77,7 @@ class Series(object):
         self.iloc = DataFrameIndexer(self._pd.iloc)
 
         # List of Pandas DataFrame methods to be made "public".
-        _dunder_attrs = ['__str__', '__repr__']
+        _dunder_attrs = ['__str__']
         _props = ['shape']
         _selection = ['take', 'sample']
         _transformation = ['apply', 'sort_values', 'describe']
@@ -85,7 +85,7 @@ class Series(object):
         _io = ['to_csv', 'to_numpy']
         
         _attrs = (
-            _dunder_attrs + _props + _selection + 
+            _dunder_attrs + _props + _selection +
             _transformation + _plotting + _io)
 
         for meth in _attrs:
@@ -138,6 +138,11 @@ class DataFrameIndexer(object):
         
     def __getitem__(self, item):
         
+        try:
+            item = item._pd
+        except AttributeError:
+            pass
+
         data = self.idx[item]
         if isinstance(data, pd.DataFrame):
             return DataFrame(data=self.idx[item])
