@@ -1,5 +1,6 @@
 import pandas as pd
 
+pd.set_option("display.max_rows", 10)
 
 class DataFrame(object):
     '''
@@ -29,7 +30,7 @@ class DataFrame(object):
         _props = ['shape', 'columns', 'index', 'values', 'T']
         _selection = ['take', 'drop', 'sample', 'get']
         _creation = ['assign']
-        _transformation = ['apply', 'sort_values', 'describe', 'groupby']
+        _transformation = ['apply', 'sort_values', 'describe', 'groupby', 'rename', 'reset_index'] # added rename, reset_index
         _combining = ['merge', 'append']
         _plotting = ['plot']
         _io = ['to_csv', 'to_numpy']
@@ -122,6 +123,10 @@ class Series(object):
         f = _lift_to_pd(self._pd.__sub__)
         return f(other)
 
+    def __truediv__(self, other):
+        f = _lift_to_pd(self._pd.__truediv__)
+        return f(other)
+
     # comparison
 
     def __eq__(self, other):
@@ -148,14 +153,18 @@ class Series(object):
         f = _lift_to_pd(self._pd.__le__)
         return f(other)
 
-    # and/or
+    # and/or/invert
     def __and__(self, other):
         f = _lift_to_pd(self._pd.__and__)
         return f(other)
 
     def __or__(self, other):
-        f = _lift_to_pd(self.pd.__or__)
+        f = _lift_to_pd(self._pd.__or__)
         return f(other)
+
+    def __invert__(self):
+        f = _lift_to_pd(self._pd.__invert__)
+        return f()
 
     # return the underlying Series
     def to_ser(self):
