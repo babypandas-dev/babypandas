@@ -86,10 +86,11 @@ class Series(object):
         _transformation = ['apply', 'sort_values', 'describe']
         _plotting = ['plot']
         _io = ['to_csv', 'to_numpy']
+        _calcs = ['count', 'mean', 'median', 'min', 'max', 'sum']
         
         _attrs = (
             _props + _selection +
-            _transformation + _plotting + _io)
+            _transformation + _plotting + _io + _calcs)
 
         for meth in _attrs:
             setattr(self, meth, _lift_to_pd(getattr(self._pd, meth)))
@@ -182,7 +183,7 @@ class DataFrameGroupBy(object):
         self._pd = groupby
         
         # List of Pandas methods to be made "public".
-        _attrs = ['count', 'mean', 'median', 'min', 'max']
+        _attrs = ['count', 'mean', 'median', 'min', 'max', 'sum']
 
         for meth in _attrs:
             setattr(self, meth, _lift_to_pd(getattr(self._pd, meth)))
