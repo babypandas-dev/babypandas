@@ -25,7 +25,7 @@ class DataFrame(object):
         self.iloc = DataFrameIndexer(self._pd.iloc)
 
         # List of Pandas DataFrame methods to be made "public".
-        _dunder_attrs = ['__str__', '__repr__', '_repr_html_']
+        _dunder_attrs = ['_repr_html_']
         _props = ['shape', 'columns', 'index', 'values', 'T']
         _selection = ['take', 'drop', 'sample', 'get']
         _creation = ['assign']
@@ -44,7 +44,10 @@ class DataFrame(object):
 
     # Formatting
     def __repr__(self):
-        return self.__repr__()
+        return self._pd.__repr__()
+
+    def __str__(self):
+        return self._pd.__str__()
 
     # return the underlying DataFrame
     def to_df(self):
@@ -77,7 +80,6 @@ class Series(object):
         self.iloc = DataFrameIndexer(self._pd.iloc)
 
         # List of Pandas DataFrame methods to be made "public".
-        _dunder_attrs = ['__str__']
         _props = ['shape']
         _selection = ['take', 'sample']
         _transformation = ['apply', 'sort_values', 'describe']
@@ -85,15 +87,66 @@ class Series(object):
         _io = ['to_csv', 'to_numpy']
         
         _attrs = (
-            _dunder_attrs + _props + _selection +
+            _props + _selection +
             _transformation + _plotting + _io)
 
         for meth in _attrs:
-            setattr(self, meth, _lift_to_pd(getattr(self._pd, meth)))
+            # setattr(self, meth, _lift_to_pd(getattr(self._pd, meth)))
+            self.__dict__[meth] = _lift_to_pd(getattr(self._pd, meth))
 
     # Formatting
     def __repr__(self):
-        return self.__repr__()
+        return self._pd.__repr__()
+
+    def __str__(self):
+        return self._pd.__str__()
+
+    # Arithmetic
+    def __add__(self, other):
+        f = _lift_to_pd(self._pd.__add__)
+        return f(other)
+
+    def __mul__(self, other):
+        f = _lift_to_pd(self._pd.__mul__)
+        return f(other)
+
+    def __rmul__(self, other):
+        f = _lift_to_pd(self._pd.__rmul__)
+        return f(other)
+
+    def __pow__(self, other):
+        f = _lift_to_pd(self._pd.__pow__)
+        return f(other)
+
+    def __sub__(self, other):
+        f = _lift_to_pd(self._pd.__sub__)
+        return f(other)
+
+    # comparison
+
+    def __eq__(self, other):
+        f = _lift_to_pd(self._pd.__eq__)
+        return f(other)
+
+    def __ne__(self, other):
+        f = _lift_to_pd(self._pd.__ne__)
+        return f(other)
+
+    def __gt__(self, other):
+        f = _lift_to_pd(self._pd.__gt__)
+        return f(other)
+
+    def __lt__(self, other):
+        f = _lift_to_pd(self._pd.__lt__)
+        return f(other)
+
+    def __ge__(self, other):
+        f = _lift_to_pd(self._pd.__ge__)
+        return f(other)
+
+    def __le__(self, other):
+        f = _lift_to_pd(self._pd.__le__)
+        return f(other)
 
     # return the underlying Series
     def to_ser(self):
@@ -145,9 +198,9 @@ class DataFrameIndexer(object):
 
         data = self.idx[item]
         if isinstance(data, pd.DataFrame):
-            return DataFrame(data=self.idx[item])
+            return DataFrame(data=data)
         elif isinstance(data, pd.Series):
-            return Series(self.idx[item])
+            return Series(data=data)
         else:
             return data
 
