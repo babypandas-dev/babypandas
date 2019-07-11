@@ -148,6 +148,15 @@ class Series(object):
         f = _lift_to_pd(self._pd.__le__)
         return f(other)
 
+    # and/or
+    def __and__(self, other):
+        f = _lift_to_pd(self._pd.__and__)
+        return f(other)
+
+    def __or__(self, other):
+        f = _lift_to_pd(self.pd.__or__)
+        return f(other)
+
     # return the underlying Series
     def to_ser(self):
         '''return the full pandas series'''
