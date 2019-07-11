@@ -79,7 +79,7 @@ class Series(object):
         self.loc = DataFrameIndexer(self._pd.loc)
         self.iloc = DataFrameIndexer(self._pd.iloc)
 
-        # List of Pandas DataFrame methods to be made "public".
+        # List of Pandas DataFrame methods to be made "public"
         _props = ['shape']
         _selection = ['take', 'sample']
         _transformation = ['apply', 'sort_values', 'describe']
@@ -91,8 +91,8 @@ class Series(object):
             _transformation + _plotting + _io)
 
         for meth in _attrs:
-            # setattr(self, meth, _lift_to_pd(getattr(self._pd, meth)))
-            self.__dict__[meth] = _lift_to_pd(getattr(self._pd, meth))
+            setattr(self, meth, _lift_to_pd(getattr(self._pd, meth)))
+            # self.__dict__[meth] = _lift_to_pd(getattr(self._pd, meth))
 
     # Formatting
     def __repr__(self):
@@ -190,13 +190,16 @@ class DataFrameIndexer(object):
         self.idx = indexer
         
     def __getitem__(self, item):
-        
+
+        # convert to pandas if item is baby-pandas object
         try:
             item = item._pd
         except AttributeError:
             pass
 
+        # TODO: restrict what item can be? (e.g. boolean array)
         data = self.idx[item]
+
         if isinstance(data, pd.DataFrame):
             return DataFrame(data=data)
         elif isinstance(data, pd.Series):
