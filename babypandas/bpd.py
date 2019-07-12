@@ -148,6 +148,10 @@ class Series(object):
         f = _lift_to_pd(self._pd.__le__)
         return f(other)
 
+    # array interface (for applying numpy functions)
+    def __array__(self):
+        return self._pd.values
+
     # return the underlying Series
     def to_ser(self):
         '''return the full pandas series'''
