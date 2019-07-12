@@ -154,18 +154,13 @@ class Series(object):
         f = _lift_to_pd(self._pd.__le__)
         return f(other)
 
-    # and/or/invert
-    def __and__(self, other):
-        f = _lift_to_pd(self._pd.__and__)
-        return f(other)
+    # othe dunder methods
+    def __len__(self):
+        return self._pd.__len__()
 
-    def __or__(self, other):
-        f = _lift_to_pd(self._pd.__or__)
-        return f(other)
-
-    def __invert__(self):
-        f = _lift_to_pd(self._pd.__invert__)
-        return f()
+    # array interface (for applying numpy functions)
+    def __array__(self):
+        return self._pd.values
 
     # return the underlying Series
     def to_ser(self):
