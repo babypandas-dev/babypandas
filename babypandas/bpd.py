@@ -148,6 +148,10 @@ class Series(object):
         f = _lift_to_pd(self._pd.__le__)
         return f(other)
 
+    # othe dunder methods
+    def __len__(self):
+        return self._pd.__len__()
+
     # array interface (for applying numpy functions)
     def __array__(self):
         return self._pd.values
