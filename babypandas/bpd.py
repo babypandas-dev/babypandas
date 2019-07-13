@@ -1,5 +1,6 @@
 import pandas as pd
 
+pd.set_option("display.max_rows", 10)
 
 class DataFrame(object):
     '''
@@ -29,7 +30,7 @@ class DataFrame(object):
         _props = ['shape', 'columns', 'index', 'values', 'T']
         _selection = ['take', 'drop', 'sample', 'get']
         _creation = ['assign']
-        _transformation = ['apply', 'sort_values', 'describe', 'groupby']
+        _transformation = ['apply', 'sort_values', 'describe', 'groupby', 'rename', 'reset_index'] # added rename, reset_index
         _combining = ['merge', 'append']
         _plotting = ['plot']
         _io = ['to_csv', 'to_numpy']
@@ -85,10 +86,11 @@ class Series(object):
         _transformation = ['apply', 'sort_values', 'describe']
         _plotting = ['plot']
         _io = ['to_csv', 'to_numpy']
+        _calcs = ['count', 'mean', 'median', 'min', 'max', 'sum', 'abs']
         
         _attrs = (
             _props + _selection +
-            _transformation + _plotting + _io)
+            _transformation + _plotting + _io + _calcs)
 
         for meth in _attrs:
             setattr(self, meth, _lift_to_pd(getattr(self._pd, meth)))
@@ -120,6 +122,10 @@ class Series(object):
 
     def __sub__(self, other):
         f = _lift_to_pd(self._pd.__sub__)
+        return f(other)
+
+    def __truediv__(self, other):
+        f = _lift_to_pd(self._pd.__truediv__)
         return f(other)
 
     # comparison
@@ -172,7 +178,7 @@ class DataFrameGroupBy(object):
         self._pd = groupby
         
         # List of Pandas methods to be made "public".
-        _attrs = ['count', 'mean', 'median', 'min', 'max']
+        _attrs = ['count', 'mean', 'median', 'min', 'max', 'sum', 'size']
 
         for meth in _attrs:
             setattr(self, meth, _lift_to_pd(getattr(self._pd, meth)))
