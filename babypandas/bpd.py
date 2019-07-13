@@ -153,8 +153,8 @@ class Series(object):
         return self._pd.__len__()
 
     # array interface (for applying numpy functions)
-    def __array__(self):
-        return self._pd.values
+    def __array__(self, *vargs, **kwargs):
+        return self._pd.__array__(*vargs, **kwargs)
 
     # return the underlying Series
     def to_ser(self):
