@@ -83,10 +83,10 @@ class Series(object):
         # List of Pandas DataFrame methods to be made "public"
         _props = ['shape']
         _selection = ['take', 'sample']
-        _transformation = ['apply', 'sort_values', 'describe']
+        _transformation = ['apply', 'sort_values', 'describe', 'reset_index'] # added reset_index
         _plotting = ['plot']
         _io = ['to_csv', 'to_numpy']
-        _calcs = ['count', 'mean', 'median', 'min', 'max', 'sum', 'abs']
+        _calcs = ['count', 'mean', 'median', 'min', 'max', 'sum', 'abs', 'std'] # added std
         
         _attrs = (
             _props + _selection +
@@ -178,7 +178,7 @@ class DataFrameGroupBy(object):
         self._pd = groupby
         
         # List of Pandas methods to be made "public".
-        _attrs = ['count', 'mean', 'median', 'min', 'max', 'sum', 'size']
+        _attrs = ['count', 'mean', 'median', 'min', 'max', 'sum', 'size', 'std'] # added std
 
         for meth in _attrs:
             setattr(self, meth, _lift_to_pd(getattr(self._pd, meth)))
