@@ -140,6 +140,23 @@ class DataFrame(object):
         del inp['self']
         return _lift_to_pd(self._pd.reset_index(**inp))
 
+    # Combining
+    def merge(self, right, how='inner', on=None, left_on=None, right_on=None, left_index=False, right_index=False, sort=False, suffixes=('_x', '_y'), copy=True, indicator=False, validate=None):
+        '''
+        Merge DataFrame or named Series objects with a database-style join.
+        '''
+        inp = locals()
+        del inp['self']
+        return _lift_to_pd(self._pd.merge(**inp))
+
+    def append(self, other, ignore_index=False, verify_integrity=False, sort=None):
+        '''
+        Append rows of other to the end of caller, returning a new object.
+        '''
+        inp = locals()
+        del inp['self']
+        return _lift_to_pd(self._pd.append(**inp))
+
     # Plotting
     def plot(self, *args, **kwargs):
         '''
