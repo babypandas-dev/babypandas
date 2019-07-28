@@ -30,7 +30,7 @@ class DataFrame(object):
         _props = ['shape', 'columns', 'index', 'values', 'T']
         _selection = ['take', 'drop', 'sample', 'get']
         _creation = ['assign']
-        _transformation = ['apply', 'sort_values', 'describe', 'groupby', 'rename', 'reset_index'] # added rename, reset_index
+        _transformation = ['apply', 'sort_values', 'describe', 'groupby', 'reset_index'] # added reset_index
         _combining = ['merge', 'append']
         _plotting = ['plot']
         _io = ['to_csv', 'to_numpy']
