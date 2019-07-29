@@ -162,7 +162,7 @@ class DataFrame(object):
         '''
         Plot the data in the DataFrame.
         '''
-        return _lift_to_pd(self.pd_plot(*args, **kwargs))
+        return _lift_to_pd(self._pd.plot(*args, **kwargs))
 
     # IO
     def to_csv(self, path_or_buf=None, sep=', ', na_rep='', float_format=None, columns=None, header=True, index=True, index_label=None, mode='w', encoding=None, compression='infer', quoting=None, quotechar='"', line_terminator=None, chunksize=None, date_format=None, doublequote=True, escapechar=None, decimal='.'):
@@ -241,27 +241,14 @@ class Series(object):
 
     def __init__(self, **kwargs):
         
-        # hidden pandas dataframe object
+        # hidden pandas dataeriesframe object
         self._pd = pd.Series(**kwargs)
         
-        # lift loc/iloc back to custom DataFrame objects
+        # lift loc/iloc back to custom Series objects
         self.loc = DataFrameIndexer(self._pd.loc)
         self.iloc = DataFrameIndexer(self._pd.iloc)
 
-        # List of Pandas DataFrame methods to be made "public"
-        _props = ['shape']
-        _selection = ['take', 'sample']
-        _transformation = ['apply', 'sort_values', 'describe', 'reset_index'] # added reset_index
-        _plotting = ['plot']
-        _io = ['to_csv', 'to_numpy']
-        
-        _attrs = (
-            _props + _selection +
-            _transformation + _plotting + _io + _calcs)
-
-        for meth in _attrs:
-            setattr(self, meth, _lift_to_pd(getattr(self._pd, meth)))
-            # self.__dict__[meth] = _lift_to_pd(getattr(self._pd, meth))
+        self.shape = _lift_to_pd(self._pd.shape)
 
     # Formatting
     def __repr__(self):
@@ -269,6 +256,77 @@ class Series(object):
 
     def __str__(self):
         return self._pd.__str__()
+
+    # Selection
+    def take(self, indices, axis=0, is_copy=False):
+        '''
+        Return the elements in the given positional indices along an axis.
+        '''
+        inp = locals()
+        del inp['self']
+        return _lift_to_pd(self._pd.take(**inp))
+
+    def sample(self, n=None, frac=None, replace=False, weights=None, random_state=None, axis=None):
+        '''
+        Return a random sample of items from an axis of object.
+        '''
+        inp = locals()
+        del inp['self']
+        return _lift_to_pd(self._pd.sample(**inp))
+
+    # Transformation
+    def apply(self, func, convert_dtype=True, args=(), **kwds):
+        '''
+        Invoke function on values of Series.
+        '''
+        inp = locals()
+        del inp['self']
+        return _lift_to_pd(self._pd.apply(**inp))
+
+    def sort_values(self, axis=0, ascending=True, inplace=False, kind='quicksort', na_position='last'):
+        '''
+        Sort by the values
+        '''
+        inp = locals()
+        del inp['self']
+        return _lift_to_pd(self._pd.sort_values(**inp))
+
+    def describe(self, percentiles=None, include=None, exclude=None):
+        '''
+        Generate descriptive statistics that summarize the central tendency, 
+        dispersion and shape of a dataset’s distribution.
+        '''
+        inp = locals()
+        del inp['self']
+        return _lift_to_pd(self._pd.describe(**inp))
+
+    def reset_index(self, level=None, drop=False, name=None, inplace=False):
+        '''
+        Generate a new DataFrame or Series with the index reset.
+        '''
+        inp = locals()
+        del inp['self']
+        return _lift_to_pd(self._pd.reset_index(**inp))
+
+    # Plotting
+    def plot(self, *args, **kwargs):
+        '''
+        Plot the data in the DataFrame.
+        '''
+        return _lift_to_pd(self._pd.plot(*args, **kwargs))
+
+    # IO
+    def to_csv(self, *args, **kwargs):
+        '''
+        Write object to a comma-separated values (csv) file.
+        '''
+        return _lift_to_pd(self.to_csv(*args, **kwargs))
+
+    def to_numpy(self, dtype=None, copy=False):
+        '''
+        A NumPy ndarray representing the values in this Series or Index.
+        '''
+        return _lift_to_pd(self.to_numpy(dtype, copy))
 
     # Calculations
     def count(self, level=None):
@@ -395,12 +453,6 @@ class DataFrameGroupBy(object):
         
         # hidden pandas dataframe object
         self._pd = groupby
-        
-        # List of Pandas methods to be made "public".
-        _attrs = ['count', 'mean', 'median', 'min', 'max', 'sum', 'size'] 
-
-        for meth in _attrs:
-            setattr(self, meth, _lift_to_pd(getattr(self._pd, meth)))
 
     # return the underlying groupby object
     def to_gb(self):
@@ -412,6 +464,49 @@ class DataFrameGroupBy(object):
             raise Exception('Provide a function to aggregate')
 
         return self._pd.aggregate(func)
+
+    # Calculations
+    def count(self):
+        '''
+        Compute count of group.
+        '''
+        return _lift_to_pd(self._pd.count())
+
+    def mean(self, *args, **kwargs):
+        '''
+        Compute mean of group.
+        '''
+        return _lift_to_pd(self._pd.mean(*args, **kwargs))
+
+    def median(self, **kwargs):
+        '''
+        Compute median of group.
+        '''
+        return _lift_to_pd(self._pd.median(**kwargs))
+
+    def min(self, **kwargs):
+        '''
+        Compute min of group.
+        '''
+        return _lift_to_pd(self._pd.min(**kwargs))
+
+    def max(self, **kwargs):
+        '''
+        Compute max of group.
+        '''
+        return _lift_to_pd(self._pd.max(**kwargs))
+
+    def sum(self, **kwargs):
+        '''
+        Compute sum of group.
+        '''
+        return _lift_to_pd(self._pd.sum(**kwargs))
+
+    def size(self):
+        '''
+        Compute group sizes.
+        '''
+        return _lift_to_pd(self._pd.size())
     
 
 class DataFrameIndexer(object):
