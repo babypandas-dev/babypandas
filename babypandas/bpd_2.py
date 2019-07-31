@@ -61,74 +61,70 @@ class DataFrame(object):
         return
 
     # Selection
-    def take(self, indices, axis=0, is_copy=True):
+    def take(self, indices):
         '''
         Return the elements in the given positional indices along an axis.
         '''
-        inp = locals()
-        del inp['self']
-        return _lift_to_pd(self._pd.take(**inp))
+        f = _lift_to_pd(self._pd.take)
+        return f(indices)
 
     def drop(self, labels=None, axis=0, index=None, columns=None, level=None, inplace=False, errors='raise'):
         '''
         Drop specified labels from rows or columns.
         '''
-        inp = locals()
-        del inp['self']
-        return _lift_to_pd(self._pd.drop(**inp))
+        f = _lift_to_pd(self._pd.drop)
+        return f(labels, axis, index, columns, level, inplace, errors)
 
-    def sample(sself, n=None, frac=None, replace=False, weights=None, random_state=None, axis=None):
+    def sample(self, n=None, frac=None, replace=False, weights=None, random_state=None, axis=None):
         '''
         Return a random sample of items from an axis of object.
         '''
-        inp = locals()
-        del inp['self']
-        return _lift_to_pd(self._pd.sample(**inp))
+        f = _lift_to_pd(self._pd.sample)
+        return f(n, frac, replace, weights, random_state, axis)
 
     def get(self, key, default=None):
         '''
         Get item from object for given key (ex: DataFrame column).
         '''
-        return _lift_to_pd(self._pd.get(key, default))
-
+        f = _lift_to_pd(self._pd.get)
+        return f(key, default)
     # Creation
     def assign(self, **kwargs):
         '''
         Assign new columns to a DataFrame.
         '''
-        return _lift_to_pd(self._pd.assign(**kwargs))
+        f = _lift_to_pd(self._pd.assign)
+        return f(**kwargs)
 
     # Transformation
     def apply(self, func, axis=0, broadcast=None, raw=False, reduce=None, result_type=None, args=(), **kwds):
         '''
         Apply a function along an axis of the DataFrame.
         '''
-        inp = locals()
-        del inp['self']
-        return _lift_to_pd(self._pd.apply(**inp))
+        f = _lift_to_pd(self._pd.apply)
+        return f(func, axis, broadcast, raw, reduce, result_type, args, **kwds)
 
     def sort_values(self, by, axis=0, ascending=True, inplace=False, kind='quicksort', na_position='last'):
         '''
         Sort by the values along either axis.
         '''
-        inp = locals()
-        del inp['self']
-        return _lift_to_pd(self._pd.sort_values(**inp))
+        f = _lift_to_pd(self._pd.sort_values)
+        return f(by, axis, ascending, inplace, kind, na_position)
 
-    def describe(self):
+    def describe(self, percentiles=None, include=None, exclude=None):
         '''
         Generate descriptive statistics that summarize the central 
         tendency, dispersion and shape of a dataset’s distribution.
         '''
-        return _lift_to_pd(self._pd.describe())
+        f = _lift_to_pd(self._pd.describe)
+        return f(percentiles, include, exclude)
 
     def groupby(self, by=None, axis=0, level=None, as_index=True, sort=True, group_keys=True, squeeze=False, observed=False, **kwargs):
         '''
         Group DataFrame or Series using a mapper or by a Series of columns.
         '''
-        inp = locals()
-        del inp['self']
-        return _lift_to_pd(self._pd.groupby(**inp))
+        f = _lift_to_pd(self._pd.groupby)
+        return f(by, axis, level, as_index, sort, group_keys, squeeze, observed, **kwargs)
 
     def reset_index(self, level=None, drop=False, inplace=False, col_level=0, col_fill=''):
         '''
@@ -136,49 +132,47 @@ class DataFrame(object):
         instead. If the DataFrame has a MultiIndex, this method can 
         remove one or more levels.
         '''
-        inp = locals()
-        del inp['self']
-        return _lift_to_pd(self._pd.reset_index(**inp))
+        f = _lift_to_pd(self._pd.reset_index)
+        return f(level, drop, inplace, col_level, col_fill)
 
     # Combining
     def merge(self, right, how='inner', on=None, left_on=None, right_on=None, left_index=False, right_index=False, sort=False, suffixes=('_x', '_y'), copy=True, indicator=False, validate=None):
         '''
         Merge DataFrame or named Series objects with a database-style join.
         '''
-        inp = locals()
-        del inp['self']
-        return _lift_to_pd(self._pd.merge(**inp))
+        f = _lift_to_pd(self._pd.merge)
+        return f(right, how, on, left_on, right_on, left_index, right_index, sort, suffixes, copy, indicator, validate)
 
-    def append(self, other, ignore_index=False, verify_integrity=False, sort=None):
+    def append(self, other, ignore_index=False):
         '''
         Append rows of other to the end of caller, returning a new object.
         '''
-        inp = locals()
-        del inp['self']
-        return _lift_to_pd(self._pd.append(**inp))
+        f = _lift_to_pd(self._pd.append)
+        return f(other, ignore_index)
 
     # Plotting
     def plot(self, *args, **kwargs):
         '''
         Plot the data in the DataFrame.
         '''
-        return _lift_to_pd(self._pd.plot(*args, **kwargs))
+        f = _lift_to_pd(self._pd.plot)
+        return f(*args, **kwargs)
 
     # IO
     def to_csv(self, path_or_buf=None, sep=', ', na_rep='', float_format=None, columns=None, header=True, index=True, index_label=None, mode='w', encoding=None, compression='infer', quoting=None, quotechar='"', line_terminator=None, chunksize=None, date_format=None, doublequote=True, escapechar=None, decimal='.'):
         '''
         Write object to a comma-separated values (csv) file.
         '''
-        inp = locals()
-        del inp['self']
-        return _lift_to_pd(self._pd.to_csv(**inp))
+        f = _lift_to_pd(self._pd.to_csv)
+        return f(path_or_buf, sep, na_rep, float_format, columns, header, index, index_label, mode, encoding, compression, quoting, quotechar, line_terminator, chunksize, date_format, doublequote, escapechar, decimal)
 
     def to_numpy(self, dtype=None, copy=False):
         '''
         Convert the DataFrame to a NumPy array.
         '''
-        return _lift_to_pd(self._pd.to_numpy(dtype, copy))
-        
+        f = _lift_to_pd(self._pd.to_numpy)
+        return f(dtype, copy)
+
 
 class Series(object):
     '''
@@ -208,94 +202,90 @@ class Series(object):
         '''
         Return the elements in the given positional indices along an axis.
         '''
-        inp = locals()
-        del inp['self']
-        return _lift_to_pd(self._pd.take(**inp))
+        f = _lift_to_pd(self._pd.take)
+        return f(indices, axis, is_copy)
 
     def sample(self, n=None, frac=None, replace=False, weights=None, random_state=None, axis=None):
         '''
         Return a random sample of items from an axis of object.
         '''
-        inp = locals()
-        del inp['self']
-        return _lift_to_pd(self._pd.sample(**inp))
+        f = _lift_to_pd(self._pd.sample)
+        return f(n, frac, replace, weights, random_state, axis)
 
     # Transformation
     def apply(self, func, convert_dtype=True, args=(), **kwds):
         '''
         Invoke function on values of Series.
         '''
-        inp = locals()
-        del inp['self']
-        return _lift_to_pd(self._pd.apply(**inp))
+        f = _lift_to_pd(self._pd.apply)
+        return f(func, convert_dtype, args, **kwds)
 
     def sort_values(self, axis=0, ascending=True, inplace=False, kind='quicksort', na_position='last'):
         '''
         Sort by the values
         '''
-        inp = locals()
-        del inp['self']
-        return _lift_to_pd(self._pd.sort_values(**inp))
+        f = _lift_to_pd(self._pd.sort_values)
+        return f(axis, ascending, inplace, kind, na_position)
 
     def describe(self, percentiles=None, include=None, exclude=None):
         '''
         Generate descriptive statistics that summarize the central tendency, 
         dispersion and shape of a dataset’s distribution.
         '''
-        inp = locals()
-        del inp['self']
-        return _lift_to_pd(self._pd.describe(**inp))
+        f = _lift_to_pd(self._pd.describe)
+        return f(percentiles, include, exclude)
 
     def reset_index(self, level=None, drop=False, name=None, inplace=False):
         '''
         Generate a new DataFrame or Series with the index reset.
         '''
-        inp = locals()
-        del inp['self']
-        return _lift_to_pd(self._pd.reset_index(**inp))
+        f = _lift_to_pd(self._pd.reset_index)
+        return f(lvel, drop, name, inplace)
 
     # Plotting
     def plot(self, *args, **kwargs):
         '''
         Plot the data in the DataFrame.
         '''
-        return _lift_to_pd(self._pd.plot(*args, **kwargs))
+        f = _lift_to_pd(self._pd.plot)
+        return f(*args, **kwargs)
 
     # IO
     def to_csv(self, *args, **kwargs):
         '''
         Write object to a comma-separated values (csv) file.
         '''
-        return _lift_to_pd(self.to_csv(*args, **kwargs))
+        f = _lift_to_pd(self._pd.to_csv)
+        return f(*args, **kwargs)
 
     def to_numpy(self, dtype=None, copy=False):
         '''
         A NumPy ndarray representing the values in this Series or Index.
         '''
-        return _lift_to_pd(self.to_numpy(dtype, copy))
+        f = _lift_to_pd(self._pd.to_numpy)
+        return f(dtype, copy)
 
     # Calculations
     def count(self, level=None):
         '''
         Return number of observations in the Series
         '''
-        return _lift_to_pd(self._pd.count(level))
+        f = _lift_to_pd(self._pd.count)
+        return f(level)
 
     def mean(self, axis=None, skipna=None, level=None, numeric_only=None, **kwargs):
         '''
         Return the mean of the values for the requested axis.
         '''
-        inp = locals()
-        del inp['self']
-        return _lift_to_pd(self._pd.mean(**inp))
+        f = _lift_to_pd(self._pd.mean)
+        return f(axis, skipna, level, numeric_only, **kwargs)
 
     def median(self, axis=None, skipna=None, level=None, numeric_only=None, **kwargs):
         '''
         Return the median of the values for the requested axis.
         '''
-        inp = locals()
-        del inp['self']
-        return _lift_to_pd(self._pd.median(**inp))
+        f = _lift_to_pd(self._pd.median)
+        return f(axis, skipna, level, numeric_only, **kwargs)
 
     def min(self, axis=None, skipna=None, level=None, numeric_only=None, **kwargs):
         '''
@@ -309,23 +299,22 @@ class Series(object):
         '''
         Return the maximum of the values for the requested axis.
         '''
-        inp = locals()
-        del inp['self']
-        return _lift_to_pd(self._pd.max(**inp))
+        f = _lift_to_pd(self._pd.max)
+        return f(axis, skipna, level, numeric_only, **kwargs)
 
     def sum(self, axis=None, skipna=None, level=None, numeric_only=None, min_count=0, **kwargs):
         '''
         Return the sum of the values for the requested axis.
         '''
-        inp = locals()
-        del inp['self']
-        return _lift_to_pd(self._pd.sum(**inp))
+        f = _lift_to_pd(self._pd.sum)
+        return f(axis, skipna, level, numeric_only, min_count, **kwargs)
 
     def abs(self):
         '''
         Return a Series with absolute numeric value of each element.
         '''
-        return _lift_to_pd(self._pd.abs())
+        f = _lift_to_pd(self._pd.abs)
+        return f()
 
     # Arithmetic
     def __add__(self, other):
