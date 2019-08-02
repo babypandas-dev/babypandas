@@ -56,9 +56,9 @@ class DataFrame(object):
         return cls(data=data, columns=columns)
 
     # Dunder Attributes
-    def __repr_html__():
-        # TODO
-        return
+    def _repr_html_(self):
+        f = _lift_to_pd(self._pd._repr_html_)
+        return f()
 
     # Selection
     def take(self, indices, axis=0, is_copy=True):
