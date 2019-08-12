@@ -2,8 +2,10 @@
 Pandas data-analysis library with a restricted API
 
 Berkeley `datascience` module equivalents with pandas:
-| Table()                            | pd.DataFrame()                                           | empty table formation                     |
+
+| `datascience` function             | `pandas` equivalent or close                             | function description                      |
 |------------------------------------|----------------------------------------------------------|-------------------------------------------|
+| Table()                            | pd.DataFrame()                                           | empty table formation                     |
 | Table().with_columns()             | pd.DataFrame().assign                                    | table from lists                          |
 | table.with_columns()               | df.assign()                                              | adding columns                            |
 | Table.read_table()                 | pd.read_csv()                                            | read in data                              |
