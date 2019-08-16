@@ -1,7 +1,7 @@
 # babypandas
 Pandas data-analysis library with a restricted API
 
-___
+---
 
 Berkeley `datascience` module equivalents with `pandas`:
 
@@ -37,6 +37,8 @@ Berkeley `datascience` module equivalents with `pandas`:
 | table.join(col, df2, col)          | df.merge(df2, on=col)                                    | merges two dataframes (same col names)    |
 | table.sample(n)                    | df.sample(n, replace=True)                               | sample with replacement                   |
 | sample_proportions(size, distr)    | np.random.multinomial(size, distr) / size                | gets sample proportions of a distribution |
+
+---
 
 ## TODO:
 - Write proper docstrings for each function
