@@ -1,5 +1,10 @@
 # babypandas
-Pandas data-analysis library with a restricted API
+`pandas` data-analysis library with a restricted API
+
+---
+
+Goal: create a simplified introductory `pandas` library that allows for basic tabular data-analysis with only the necessary methods and arguments. Allows
+for a smooth transition into `pandas`.
 
 ---
 
@@ -42,4 +47,4 @@ Berkeley `datascience` module equivalents with `pandas`:
 
 ## TODO:
 - Write proper docstrings for each function
-- Clean up table methods to match `datascience` documentation and `babypandas` source code
+- Clean up methods in table above to match `datascience` documentation and `babypandas` source code
