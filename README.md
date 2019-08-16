@@ -1,6 +1,8 @@
 # babypandas
 Pandas data-analysis library with a restricted API
 
+___
+
 Berkeley `datascience` module equivalents with `pandas`:
 
 | `datascience` function             | `pandas` equivalent or close                             | function description                      |
