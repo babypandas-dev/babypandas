@@ -344,6 +344,10 @@ class Series(object):
         f = _lift_to_pd(self._pd.__truediv__)
         return f(other)
 
+    def __mod__(self, other):
+        f = _lift_to_pd(self._pd.__mod__)
+        return f(other)
+
     # comparison
     def __eq__(self, other):
         f = _lift_to_pd(self._pd.__eq__)
