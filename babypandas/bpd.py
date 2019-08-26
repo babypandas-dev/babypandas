@@ -64,6 +64,9 @@ class DataFrame(object):
     def take(self, indices):
         '''
         Return the elements in the given positional indices along an axis.
+
+        :param indices: TODO
+        :return: TODO
         '''
         f = _lift_to_pd(self._pd.take)
         return f(indices=indices)
@@ -71,6 +74,9 @@ class DataFrame(object):
     def drop(self, columns=None):
         '''
         Drop specified labels from rows or columns.
+
+        :param columns: TODO
+        :return: TODO
         '''
         f = _lift_to_pd(self._pd.drop)
         return f(columns=columns)
@@ -78,6 +84,10 @@ class DataFrame(object):
     def sample(self, n=None, replace=False):
         '''
         Return a random sample of items from an axis of object.
+
+        :param n: TODO
+        :param replace: TODO
+        :return: TODO
         '''
         f = _lift_to_pd(self._pd.sample)
         return f(n=n, replace=replace)
@@ -85,6 +95,9 @@ class DataFrame(object):
     def get(self, key):
         '''
         Get item from object for given key (ex: DataFrame column).
+
+        :param key: TODO
+        :return: TODO
         '''
         f = _lift_to_pd(self._pd.get)
         return f(key=key)
@@ -92,21 +105,32 @@ class DataFrame(object):
     def assign(self, **kwargs):
         '''
         Assign new columns to a DataFrame.
+
+        :param kwargs: TODO
+        :return: TODO
         '''
         f = _lift_to_pd(self._pd.assign)
         return f(**kwargs)
 
     # Transformation
-    def apply(self, func, axis=0, **kwds):
+    def apply(self, func, axis=0):
         '''
         Apply a function along an axis of the DataFrame.
+
+        :param func: TODO
+        :param axis: TODO
+        :return: TODO
         '''
         f = _lift_to_pd(self._pd.apply)
-        return f(func=func, axis=axis, **kwds)
+        return f(func=func, axis=axis)
 
     def sort_values(self, by, ascending=True):
         '''
         Sort by the values along either axis.
+
+        :param by: TODO
+        :param ascending: TODO
+        :return: TODO
         '''
         f = _lift_to_pd(self._pd.sort_values)
         return f(by=by, ascending=ascending)
@@ -122,6 +146,9 @@ class DataFrame(object):
     def groupby(self, by=None):
         '''
         Group DataFrame or Series using a mapper or by a Series of columns.
+
+        :param by: TODO
+        :return: TODO
         '''
         f = _lift_to_pd(self._pd.groupby)
         return f(by=by)
@@ -131,11 +158,21 @@ class DataFrame(object):
         Reset the index of the DataFrame, and use the default one 
         instead. If the DataFrame has a MultiIndex, this method can 
         remove one or more levels.
+
+        :param drop: TODO
+        :return: TODO
         '''
         f = _lift_to_pd(self._pd.reset_index)
         return f(drop=drop)
 
     def set_index(self, keys, drop=True):
+        '''
+        Set the DataFrame index using existing columns.
+
+        :param keys: TODO
+        :param drop: TODO
+        :return: TODO
+        '''
         f = _lift_to_pd(self._pd.set_index)
         return f(keys=keys, drop=drop)
 
@@ -143,6 +180,13 @@ class DataFrame(object):
     def merge(self, right, how='inner', on=None, left_on=None, right_on=None):
         '''
         Merge DataFrame or named Series objects with a database-style join.
+
+        :param right: TODO
+        :param how: TODO
+        :param on: TODO
+        :param left_on: TODO
+        :param right_on: TODO
+        :return: TODO
         '''
         f = _lift_to_pd(self._pd.merge)
         return f(right=right, how=how, on=on, left_on=left_on, right_on=right_on)
@@ -150,6 +194,9 @@ class DataFrame(object):
     def append(self, other):
         '''
         Append rows of other to the end of caller, returning a new object.
+
+        :param other: TODO
+        :return: TODO
         '''
         f = _lift_to_pd(self._pd.append)
         return f(other=other)
@@ -166,6 +213,9 @@ class DataFrame(object):
     def to_csv(self, path_or_buf=None):
         '''
         Write object to a comma-separated values (csv) file.
+
+        :param path_or_buf: TODO
+        :return: TODO
         '''
         f = _lift_to_pd(self._pd.to_csv)
         return f(path_or_buf=path_or_buf)
@@ -205,6 +255,9 @@ class Series(object):
     def take(self, indices):
         '''
         Return the elements in the given positional indices along an axis.
+
+        :param indices: TODO
+        :return: TODO
         '''
         f = _lift_to_pd(self._pd.take)
         return f(indices)
@@ -212,21 +265,31 @@ class Series(object):
     def sample(self, n=None, replace=False):
         '''
         Return a random sample of items from an axis of object.
+        
+        :param n: TODO
+        :param replace: TODO
+        :return: TODO
         '''
         f = _lift_to_pd(self._pd.sample)
         return f(n=n, replace=replace)
 
     # Transformation
-    def apply(self, func, **kwds):
+    def apply(self, func):
         '''
         Invoke function on values of Series.
+
+        :param func: TODO
+        :return: TODO
         '''
         f = _lift_to_pd(self._pd.apply)
-        return f(func=func, **kwds)
+        return f(func=func)
 
     def sort_values(self, ascending=True):
         '''
         Sort by the values
+
+        :param ascending: TODO
+        :return: TODO
         '''
         f = _lift_to_pd(self._pd.sort_values)
         return f(ascending=ascending)
@@ -242,6 +305,9 @@ class Series(object):
     def reset_index(self, drop=False):
         '''
         Generate a new DataFrame or Series with the index reset.
+
+        :param drop: TODO
+        :return: TODO
         '''
         f = _lift_to_pd(self._pd.reset_index)
         return f(drop=drop)
