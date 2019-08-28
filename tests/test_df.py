@@ -1,11 +1,6 @@
 import pytest
 
-import os
-
-print("Path at terminal when executing this file")
-print(os.getcwd() + "\n")
-
-import src.babypandas.bpd
+import babypandas.bpd as bpd
 
 def test_df_length():
 	df = bpd.DataFrame().assign(name=['Al', 'Bob', 'Jill', 'Sally'],
