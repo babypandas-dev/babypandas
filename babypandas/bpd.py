@@ -218,9 +218,15 @@ class DataFrame(object):
             - right: use only keys from right frame, similar to a SQL right outer join; preserve key order.
             - outer: use union of keys from both frames, similar to a SQL full outer join; sort keys lexicographically.
             - inner: use intersection of keys from both frames, similar to a SQL inner join; preserve the order of the left keys.
+        
         :param on: Column or index level names to join on. These must be found in both DataFrames.
         :param left_on: Column or index level names to join on in the left DataFrame.
         :param right_on: Column or index level names to join on in the right DataFrame.
+        :type right:
+        :type how:
+        :type on:
+        :type left_on:
+        :type right_on:
         :return: A DataFrame of the two merged objects.
         :rtype: DataFrame
         '''
