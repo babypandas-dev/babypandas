@@ -69,6 +69,24 @@ class DataFrame(object):
         :type indices: list of ints
         :return: DataFrame with the given positional indices.
         :rtype: DataFrame
+
+        :example:
+        >>> df = pd.DataFrame([('falcon', 'bird',    389.0),
+        ...                    ('parrot', 'bird',     24.0),
+        ...                    ('lion',   'mammal',   80.5),
+        ...                    ('monkey', 'mammal', np.nan)],
+        ...                    columns=['name', 'class', 'max_speed'],
+        ...                    index=[0, 2, 3, 1])
+        >>> df
+             name   class  max_speed
+        0  falcon    bird      389.0
+        2  parrot    bird       24.0
+        3    lion  mammal       80.5
+        1  monkey  mammal        NaN
+        >>> df.take([0, 3])
+             name   class  max_speed
+        0  falcon    bird      389.0
+        1  monkey  mammal        NaN
         '''
         f = _lift_to_pd(self._pd.take)
         return f(indices=indices)
