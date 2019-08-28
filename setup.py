@@ -9,6 +9,7 @@ with open('requirements.txt') as fid:
 setup(
     name = 'babypandas',
     packages = ['babypandas'],
+    package_dir = {'': 'babypandas'},
     version = '0.1.0',
     install_requires = install_requires,
     description = 'A restricted Pandas API',
