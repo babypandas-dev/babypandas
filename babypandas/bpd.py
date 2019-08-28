@@ -132,7 +132,7 @@ class DataFrame(object):
             
             - 0 or 'index': apply function to each column.
             - 1 or 'columns': apply function to each row.
-            
+
         :type func: function
         :type axis: {0 or ‘index’, 1 or ‘columns’}, default 0
         :return: Result of applying func along the given axis of the DataFrame.
@@ -149,7 +149,7 @@ class DataFrame(object):
         :param ascending: Sort ascending vs. descending.
         :type by: str or list of str
         :type param: bool, default True
-        :return: DataFrame with sorted values
+        :return: DataFrame with sorted values.
         :rtype: DataFrame
         '''
         f = _lift_to_pd(self._pd.sort_values)
@@ -160,7 +160,7 @@ class DataFrame(object):
         Generate descriptive statistics that summarize the central 
         tendency, dispersion and shape of a dataset’s distribution.
 
-        :return: Summary statistics of the DataFrame provided
+        :return: Summary statistics of the DataFrame provided.
         :rtype: DataFrame
         '''
         f = _lift_to_pd(self._pd.describe)
@@ -170,8 +170,10 @@ class DataFrame(object):
         '''
         Group DataFrame or Series using a mapper or by a Series of columns.
 
-        :param by: TODO
-        :return: TODO
+        :param by: Used to determine the groups for the groupby.
+        :type by: label, or list of labels
+        :return: Groupby object that contains information about the groups.
+        :rtype: DataFrameGroupBy
         '''
         f = _lift_to_pd(self._pd.groupby)
         return f(by=by)
@@ -182,8 +184,10 @@ class DataFrame(object):
         instead. If the DataFrame has a MultiIndex, this method can 
         remove one or more levels.
 
-        :param drop: TODO
-        :return: TODO
+        :param drop: Does not insert index as a column.
+        :type drop: bool, default False
+        :return: DataFrame with the new index
+        :rtype: DataFrame
         '''
         f = _lift_to_pd(self._pd.reset_index)
         return f(drop=drop)
@@ -192,9 +196,12 @@ class DataFrame(object):
         '''
         Set the DataFrame index using existing columns.
 
-        :param keys: TODO
-        :param drop: TODO
-        :return: TODO
+        :param keys: Key(s) to set index on.
+        :param drop: Delete column(s) to be used as the new index.
+        :type keys: label or list of labels
+        :type drop: bool, default True
+        :return: DataFrame with changed row labels
+        :rtype: DataFrame
         '''
         f = _lift_to_pd(self._pd.set_index)
         return f(keys=keys, drop=drop)
@@ -204,8 +211,12 @@ class DataFrame(object):
         '''
         Merge DataFrame or named Series objects with a database-style join.
 
-        :param right: TODO
-        :param how: TODO
+        :param right: Object to merge with
+        :param how: Type of merge to be performed.
+            - left: use only keys from left frame, similar to a SQL left outer join; preserve key order.
+            - right: use only keys from right frame, similar to a SQL right outer join; preserve key order.
+            - outer: use union of keys from both frames, similar to a SQL full outer join; sort keys lexicographically.
+            - inner: use intersection of keys from both frames, similar to a SQL inner join; preserve the order of the left keys.
         :param on: TODO
         :param left_on: TODO
         :param right_on: TODO
