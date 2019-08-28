@@ -65,8 +65,9 @@ class DataFrame(object):
         '''
         Return the elements in the given positional indices along an axis.
 
-        :param indices: TODO
-        :return: TODO
+        :param indices: An array of ints indicating which positions to take.
+        :type indices: array-like
+        :return: A DataFrame with the given positional indices.
         '''
         f = _lift_to_pd(self._pd.take)
         return f(indices=indices)
@@ -75,8 +76,8 @@ class DataFrame(object):
         '''
         Drop specified labels from rows or columns.
 
-        :param columns: TODO
-        :return: TODO
+        :param columns: Column labels to drop.
+        :return: A DataFrame with the dropped columns.
         '''
         f = _lift_to_pd(self._pd.drop)
         return f(columns=columns)
@@ -85,9 +86,9 @@ class DataFrame(object):
         '''
         Return a random sample of items from an axis of object.
 
-        :param n: TODO
-        :param replace: TODO
-        :return: TODO
+        :param n: Number of items from axis to return.
+        :param replace: Sample with or without replacement.
+        :return: A DataFrame with *n* randomly sampled rows.
         '''
         f = _lift_to_pd(self._pd.sample)
         return f(n=n, replace=replace)
@@ -96,8 +97,8 @@ class DataFrame(object):
         '''
         Get item from object for given key (ex: DataFrame column).
 
-        :param key: TODO
-        :return: TODO
+        :param key: Column label or list of column labels 
+        :return: A Series with the corresponding label or a DataFrame with the corresponding labels
         '''
         f = _lift_to_pd(self._pd.get)
         return f(key=key)
@@ -106,8 +107,8 @@ class DataFrame(object):
         '''
         Assign new columns to a DataFrame.
 
-        :param kwargs: TODO
-        :return: TODO
+        :param kwargs: Keyword column names with a list of values
+        :return: A DataFrame with the additional column(s)
         '''
         f = _lift_to_pd(self._pd.assign)
         return f(**kwargs)
@@ -117,7 +118,7 @@ class DataFrame(object):
         '''
         Apply a function along an axis of the DataFrame.
 
-        :param func: TODO
+        :param func: Function to apply to each column or row.
         :param axis: TODO
         :return: TODO
         '''
