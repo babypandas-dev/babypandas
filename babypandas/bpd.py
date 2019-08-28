@@ -68,6 +68,7 @@ class DataFrame(object):
         :param indices: An array of ints indicating which positions to take.
         :type indices: array-like
         :return: DataFrame with the given positional indices.
+        :rtype: DataFrame
         '''
         f = _lift_to_pd(self._pd.take)
         return f(indices=indices)
@@ -79,6 +80,7 @@ class DataFrame(object):
         :param columns: Column labels to drop.
         :type columns: single  label or list-like
         :return: DataFrame with the dropped columns.
+        :rtype: DataFrame
         '''
         f = _lift_to_pd(self._pd.drop)
         return f(columns=columns)
@@ -92,6 +94,7 @@ class DataFrame(object):
         :type n: int, optional
         :type replace: bool, default False
         :return: DataFrame with *n* randomly sampled rows.
+        :rtype: DataFrame
         '''
         f = _lift_to_pd(self._pd.sample)
         return f(n=n, replace=replace)
@@ -103,6 +106,7 @@ class DataFrame(object):
         :param key: Column label or list of column labels
         :type key: single label or list-like 
         :return: Series with the corresponding label or DataFrame with the corresponding labels
+        :rtype: Series or DataFrame
         '''
         f = _lift_to_pd(self._pd.get)
         return f(key=key)
@@ -113,6 +117,7 @@ class DataFrame(object):
 
         :param kwargs: Keyword column names with a list of values
         :return: DataFrame with the additional column(s)
+        :rtype: DataFrame
         '''
         f = _lift_to_pd(self._pd.assign)
         return f(**kwargs)
@@ -124,11 +129,12 @@ class DataFrame(object):
 
         :param func: Function to apply to each column or row.
         :param axis: Axis along which the function is applied:
-                        - 0 or 'index': apply function to each column.
-                        - 1 or 'columns': apply function to each row.
+            *0 or 'index': apply function to each column.
+            *1 or 'columns': apply function to each row.
         :type func: function
         :type axis: {0 or ‘index’, 1 or ‘columns’}, default 0
         :return: Result of applying func along the given axis of the DataFrame.
+        :rtype: Series or DataFrame
         '''
         f = _lift_to_pd(self._pd.apply)
         return f(func=func, axis=axis)
@@ -142,6 +148,7 @@ class DataFrame(object):
         :type by: str or list of str
         :type param: bool, default True
         :return: DataFrame with sorted values
+        :rtype: DataFrame
         '''
         f = _lift_to_pd(self._pd.sort_values)
         return f(by=by, ascending=ascending)
@@ -152,6 +159,7 @@ class DataFrame(object):
         tendency, dispersion and shape of a dataset’s distribution.
 
         :return: Summary statistics of the DataFrame provided
+        :rtype: DataFrame
         '''
         f = _lift_to_pd(self._pd.describe)
         return f()
