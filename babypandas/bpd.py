@@ -73,7 +73,7 @@ class DataFrame(object):
         :example:
 
         >>> df = bpd.DataFrame().assign(name=['falcon', 'parrot', 'lion'],
-                                        class=['bird', 'bird', 'mammal'])
+        ...                             class=['bird', 'bird', 'mammal'])
         >>> df
              name   class
         0  falcon    bird
