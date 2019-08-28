@@ -130,8 +130,9 @@ class DataFrame(object):
         :param func: Function to apply to each column or row.
         :param axis: Axis along which the function is applied:
             
-            *0 or 'index': apply function to each column.
-            *1 or 'columns': apply function to each row.
+            - 0 or 'index': apply function to each column.
+            - 1 or 'columns': apply function to each row.
+            
         :type func: function
         :type axis: {0 or ‘index’, 1 or ‘columns’}, default 0
         :return: Result of applying func along the given axis of the DataFrame.
