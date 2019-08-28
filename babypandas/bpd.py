@@ -66,7 +66,7 @@ class DataFrame(object):
         Return the elements in the given positional indices along an axis.
 
         :param indices: An array of ints indicating which positions to take.
-        :type indices: array-like
+        :type indices: list of ints
         :return: DataFrame with the given positional indices.
         :rtype: DataFrame
         '''
@@ -78,7 +78,7 @@ class DataFrame(object):
         Drop specified labels from rows or columns.
 
         :param columns: Column labels to drop.
-        :type columns: single  label or list-like
+        :type columns: single  label or list of labels
         :return: DataFrame with the dropped columns.
         :rtype: DataFrame
         '''
@@ -104,7 +104,7 @@ class DataFrame(object):
         Get item from object for given key (ex: DataFrame column).
 
         :param key: Column label or list of column labels
-        :type key: single label or list-like 
+        :type key: single label or list of labels 
         :return: Series with the corresponding label or DataFrame with the corresponding labels
         :rtype: Series or DataFrame
         '''
@@ -115,8 +115,8 @@ class DataFrame(object):
         '''
         Assign new columns to a DataFrame.
 
-        :param kwargs: Keyword column names with a list of values
-        :return: DataFrame with the additional column(s)
+        :param kwargs: Keyword column names with a list of values.
+        :return: DataFrame with the additional column(s).
         :rtype: DataFrame
         '''
         f = _lift_to_pd(self._pd.assign)
@@ -305,8 +305,9 @@ class Series(object):
         '''
         Return the elements in the given positional indices along an axis.
 
-        :param indices: TODO
-        :return: TODO
+        :param indices: An array of ints indicating which positions to take.
+        :type indices: list of ints
+        :return: Series with the given positional indices.
         '''
         f = _lift_to_pd(self._pd.take)
         return f(indices)
@@ -315,9 +316,12 @@ class Series(object):
         '''
         Return a random sample of items from an axis of object.
         
-        :param n: TODO
-        :param replace: TODO
-        :return: TODO
+        :param n: Number of items from axis to return.
+        :param replace: Sample with or without replacement.
+        :type n: int, optional
+        :type replace: bool, default False
+        :return: Series with *n* randomly sampled items.
+        :rtype: Series
         '''
         f = _lift_to_pd(self._pd.sample)
         return f(n=n, replace=replace)
@@ -327,8 +331,10 @@ class Series(object):
         '''
         Invoke function on values of Series.
 
-        :param func: TODO
-        :return: TODO
+        :param func: Function to apply.
+        :type func: function
+        :return: Result of applying func to the Series.
+        :rtype: Series
         '''
         f = _lift_to_pd(self._pd.apply)
         return f(func=func)
@@ -337,8 +343,10 @@ class Series(object):
         '''
         Sort by the values
 
-        :param ascending: TODO
-        :return: TODO
+        :param ascending: Sort ascending vs. descending.
+        :type ascending: bool, default True
+        :return: Series with sorted values.
+        :rtype: Series
         '''
         f = _lift_to_pd(self._pd.sort_values)
         return f(ascending=ascending)
@@ -347,6 +355,9 @@ class Series(object):
         '''
         Generate descriptive statistics that summarize the central tendency, 
         dispersion and shape of a dataset’s distribution.
+
+        :return: Summary statistics of the Series provided.
+        :rtype: Series
         '''
         f = _lift_to_pd(self._pd.describe)
         return f()
@@ -355,8 +366,10 @@ class Series(object):
         '''
         Generate a new DataFrame or Series with the index reset.
 
-        :param drop: TODO
-        :return: TODO
+        :param drop: Does not insert index as a column.
+        :type drop: bool, default False
+        :return: When drop is False (the default), a DataFrame is returned. The newly created columns will come first in the DataFrame, followed by the original Series values. When drop is True, a Series is returned.
+        :rtype: Series or DataFrame
         '''
         f = _lift_to_pd(self._pd.reset_index)
         return f(drop=drop)
@@ -370,16 +383,24 @@ class Series(object):
         return f(*args, **kwargs)
 
     # IO
-    def to_csv(self, *args, **kwargs):
+    def to_csv(self, path_or_buf=None):
         '''
         Write object to a comma-separated values (csv) file.
+        :param path_or_buf: File path or object, if None is provided the result is returned as a string.
+        :type parth_or_buf: str or file handle, default None
+        :return: If path_or_buf is None, returns the resulting csv format as a string. Otherwise returns None.
+        :rtype: None or str
+
         '''
         f = _lift_to_pd(self._pd.to_csv)
-        return f(*args, **kwargs)
+        return f(path_or_buf=path_or_buf)
 
     def to_numpy(self):
         '''
         A NumPy ndarray representing the values in this Series or Index.
+
+        :return: Series as a NumPy array.
+        :rtype: NumPy array
         '''
         f = _lift_to_pd(self._pd.to_numpy)
         return f()
