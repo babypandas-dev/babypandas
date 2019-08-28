@@ -1,6 +1,6 @@
 import pytest
 
-import bpd
+from babypandas import bpd
 
 def test_df_length():
 	df = bpd.DataFrame().assign(name=['Al', 'Bob', 'Jill', 'Sally'],
