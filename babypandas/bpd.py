@@ -186,7 +186,7 @@ class DataFrame(object):
 
         :param drop: Does not insert index as a column.
         :type drop: bool, default False
-        :return: DataFrame with the new index
+        :return: DataFrame with the new index.
         :rtype: DataFrame
         '''
         f = _lift_to_pd(self._pd.reset_index)
@@ -200,7 +200,7 @@ class DataFrame(object):
         :param drop: Delete column(s) to be used as the new index.
         :type keys: label or list of labels
         :type drop: bool, default True
-        :return: DataFrame with changed row labels
+        :return: DataFrame with changed row labels.
         :rtype: DataFrame
         '''
         f = _lift_to_pd(self._pd.set_index)
@@ -222,11 +222,11 @@ class DataFrame(object):
         :param on: Column or index level names to join on. These must be found in both DataFrames.
         :param left_on: Column or index level names to join on in the left DataFrame.
         :param right_on: Column or index level names to join on in the right DataFrame.
-        :type right:
-        :type how:
-        :type on:
-        :type left_on:
-        :type right_on:
+        :type right: DataFrame or named Series
+        :type how: {‘left’, ‘right’, ‘outer’, ‘inner’}, default ‘inner’
+        :type on: label or list of labels
+        :type left_on: label or list of labels
+        :type right_on: label or list of labels
         :return: A DataFrame of the two merged objects.
         :rtype: DataFrame
         '''
@@ -237,8 +237,10 @@ class DataFrame(object):
         '''
         Append rows of other to the end of caller, returning a new object.
 
-        :param other: TODO
-        :return: TODO
+        :param other: The data to append.
+        :type other: DataFrame or Series/dict-like object, or list of these
+        :return: DataFrame with appended rows.
+        :rtype: DataFrame
         '''
         f = _lift_to_pd(self._pd.append)
         return f(other=other)
@@ -256,8 +258,10 @@ class DataFrame(object):
         '''
         Write object to a comma-separated values (csv) file.
 
-        :param path_or_buf: TODO
-        :return: TODO
+        :param path_or_buf: File path or object, if None is provided the result is returned as a string.
+        :type path_or_buf: str or file handle, default None
+        :return: If path_or_buf is None, returns the resulting csv format as a string. Otherwise returns None.
+        :rtype: None or str
         '''
         f = _lift_to_pd(self._pd.to_csv)
         return f(path_or_buf=path_or_buf)
@@ -265,6 +269,9 @@ class DataFrame(object):
     def to_numpy(self):
         '''
         Convert the DataFrame to a NumPy array.
+
+        :return: DataFrame as a NumPy array.
+        :rtype: NumPy array
         '''
         f = _lift_to_pd(self._pd.to_numpy)
         return f()
