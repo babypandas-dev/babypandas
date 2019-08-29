@@ -1,4 +1,5 @@
 import pandas as pd
+from collections.abc import Iterable
 
 pd.set_option("display.max_rows", 10)
 
@@ -73,14 +74,14 @@ class DataFrame(object):
         :example:
 
         >>> df = bpd.DataFrame().assign(name=['falcon', 'parrot', 'lion'],
-        ...                             class=['bird', 'bird', 'mammal'])
+        ...                             type=['bird', 'bird', 'mammal'])
         >>> df
-             name   class
+             name    type
         0  falcon    bird
         1  parrot    bird
         2    lion  mammal
         >>> df.take([0, 2])
-             name   class
+             name    type
         0  falcon    bird
         2    lion  mammal
         '''
@@ -99,19 +100,21 @@ class DataFrame(object):
         f = _lift_to_pd(self._pd.drop)
         return f(columns=columns)
 
-    def sample(self, n=None, replace=False):
+    def sample(self, n=None, replace=False, random_state=None):
         '''
         Return a random sample of items from an axis of object.
 
         :param n: Number of items from axis to return.
         :param replace: Sample with or without replacement.
+        :param random_state: Seed for the random number generator (if int), or numpy RandomState object.
         :type n: int, optional
         :type replace: bool, default False
+        :type random_state: int or numpy.random.RandomState, optional
         :return: DataFrame with *n* randomly sampled rows.
         :rtype: DataFrame
         '''
         f = _lift_to_pd(self._pd.sample)
-        return f(n=n, replace=replace)
+        return f(n=n, replace=replace, random_state=random_state)
 
     def get(self, key):
         '''
@@ -189,6 +192,9 @@ class DataFrame(object):
         :return: Groupby object that contains information about the groups.
         :rtype: DataFrameGroupBy
         '''
+        if not isinstance(by, str) and not isinstance(by, Iterable):
+            raise ValueError('Wrong input type')
+
         f = _lift_to_pd(self._pd.groupby)
         return f(by=by)
 
@@ -326,14 +332,16 @@ class Series(object):
         f = _lift_to_pd(self._pd.take)
         return f(indices)
 
-    def sample(self, n=None, replace=False):
+    def sample(self, n=None, replace=False, random_state=None):
         '''
         Return a random sample of items from an axis of object.
         
         :param n: Number of items from axis to return.
         :param replace: Sample with or without replacement.
+        :param random_state: Seed for the random number generator (if int), or numpy RandomState object.
         :type n: int, optional
         :type replace: bool, default False
+        :type random_state: int or numpy.random.RandomState, optional
         :return: Series with *n* randomly sampled items.
         :rtype: Series
         '''
