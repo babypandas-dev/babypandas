@@ -312,6 +312,8 @@ class Series(object):
         self.iloc = DataFrameIndexer(self._pd.iloc)
 
         self.shape = _lift_to_pd(self._pd.shape)
+        self.index = _lift_to_pd(self._pd.index)
+        self.values = _lift_to_pd(self._pd.values)
 
     # Formatting
     def __repr__(self):
@@ -346,7 +348,7 @@ class Series(object):
         :rtype: Series
         '''
         f = _lift_to_pd(self._pd.sample)
-        return f(n=n, replace=replace)
+        return f(n=n, replace=replace, random_state=random_state)
 
     # Transformation
     def apply(self, func):

@@ -92,7 +92,7 @@ def test_basic():
 
 def test_iloc():
 	df = df2()
-	assert_array_equal(df.iloc[0], np.array([5, 2, 6, 5]))
+	assert_array_equal(df.iloc[0].values, np.array([5, 2, 6, 5]))
 
 def test_take(): 
 	df = df1()
@@ -136,8 +136,8 @@ def test_sample():
 
 def test_get():
 	df = df1()
-	assert_array_equal(df.get('letter'), np.array(['a', 'b', 'c']))
-	assert_array_equal(df.get('count'), np.array([9, 3, 3]))
+	assert_array_equal(df.get('letter').values, np.array(['a', 'b', 'c']))
+	assert_array_equal(df.get('count').values, np.array([9, 3, 3]))
 
 def test_assign():
 	df = df2()
@@ -264,3 +264,7 @@ def test_merge():
 
 # def test_append():
 # 	...
+
+def test_to_numpy():
+	df = df1()
+	assert isinstance(df.to_numpy(), np.ndarray)
