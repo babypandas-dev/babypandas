@@ -92,7 +92,7 @@ def test_basic():
 
 def test_iloc():
 	df = df2()
-	assert_array_equal(df.iloc[0], [5, 2, 6, 5])
+	assert_array_equal(df.iloc[0], np.array([5, 2, 6, 5]))
 
 def test_take(): 
 	df = df1()
@@ -136,8 +136,8 @@ def test_sample():
 
 def test_get():
 	df = df1()
-	assert_array_equal(df.get('letter'), ['a', 'b', 'c'])
-	assert_array_equal(df.get('count'), [9, 3, 3])
+	assert_array_equal(df.get('letter'), np.array(['a', 'b', 'c']))
+	assert_array_equal(df.get('count'), np.array([9, 3, 3]))
 
 def test_assign():
 	df = df2()
@@ -248,3 +248,19 @@ def test_set_index():
 	7        7     1     1     5
 	5        5     8     3     9
 	''')
+
+def test_merge():
+	df_left = df3()
+	df_right = df4()
+	assert_equal(df_left.merge(df_right),
+	'''
+	      name     type short
+	0      dog   mammal     m
+	1      cat   mammal     m
+	2  pidgeon     bird     b
+	3  chicken     bird     b
+	4    snake  reptile     r
+	''')
+
+# def test_append():
+# 	...
