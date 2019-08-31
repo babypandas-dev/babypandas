@@ -45,5 +45,5 @@ def test_take():
 	ser = ser3()
 	assert_array_equal(ser.take([0, 2]), np.array([7, 3]))
 
-def test_sample():
-	# TODO
+# def test_sample():
+# 	# TODO
