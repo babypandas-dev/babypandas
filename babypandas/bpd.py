@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 from collections.abc import Iterable
 
 pd.set_option("display.max_rows", 10)
@@ -85,6 +86,13 @@ class DataFrame(object):
         0  falcon    bird
         2    lion  mammal
         '''
+        if not isinstance(indices, Iterable):
+            raise ValueError('Argument `indices` must be a list-like object')
+        if not all(isinstance(x, int) for x in indices):
+            raise ValueError('Argument `indices` must only contain integers')
+        if not all(x in self.index for x in indices):
+            raise IndexError('Indices are out-of-bounds')
+
         f = _lift_to_pd(self._pd.take)
         return f(indices=indices)
 
@@ -93,10 +101,17 @@ class DataFrame(object):
         Drop specified labels from rows or columns.
 
         :param columns: Column labels to drop.
-        :type columns: single  label or list of labels
+        :type columns: single string label or list of string labels
         :return: DataFrame with the dropped columns.
         :rtype: DataFrame
         '''
+        if not isinstance(columns, str) and not isinstance(columns, Iterable):
+            raise ValueError('Argument `columns` must be a string label or list of string labels')
+        mask = [columns not in self.columns] if isinstance(columns, str) else [x not in self.columns for x in columns]
+        if any(mask):
+            c = [columns] if isinstance(columns, str) else columns
+            raise KeyError('{} not found in columns'.format(np.array(c)[mask]))
+
         f = _lift_to_pd(self._pd.drop)
         return f(columns=columns)
 
