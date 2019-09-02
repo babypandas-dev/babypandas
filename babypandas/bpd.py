@@ -87,7 +87,7 @@ class DataFrame(object):
         2    lion  mammal
         '''
         if not isinstance(indices, Iterable):
-            raise ValueError('Argument `indices` must be a list-like object')
+            raise TypeError('Argument `indices` must be a list-like object')
         if not all(isinstance(x, int) for x in indices):
             raise ValueError('Argument `indices` must only contain integers')
         if not all(x in self.index for x in indices):
@@ -101,12 +101,12 @@ class DataFrame(object):
         Drop specified labels from rows or columns.
 
         :param columns: Column labels to drop.
-        :type columns: single string label or list of string labels
+        :type columns: str label or list of str labels
         :return: DataFrame with the dropped columns.
         :rtype: DataFrame
         '''
         if not isinstance(columns, str) and not isinstance(columns, Iterable):
-            raise ValueError('Argument `columns` must be a string label or list of string labels')
+            raise TypeError('Argument `columns` must be a string label or list of string labels')
         mask = [columns not in self.columns] if isinstance(columns, str) else [x not in self.columns for x in columns]
         if any(mask):
             c = [columns] if isinstance(columns, str) else columns
@@ -121,13 +121,20 @@ class DataFrame(object):
 
         :param n: Number of items from axis to return.
         :param replace: Sample with or without replacement.
-        :param random_state: Seed for the random number generator (if int), or numpy RandomState object.
+        :param random_state: Seed for the random number generator
         :type n: int, optional
         :type replace: bool, default False
-        :type random_state: int or numpy.random.RandomState, optional
+        :type random_state: int, optional
         :return: DataFrame with *n* randomly sampled rows.
         :rtype: DataFrame
         '''
+        if not isinstance(n, int) and n != None:
+            raise TypeError('Argument `n` not an integer')
+        if not isinstance(replace, bool) and replace != None:
+            raise TypeError('Argument `replace` not a boolean')
+        if not isinstance(random_state, int) and random_state != None:
+            raise TypeError('Argument `random_state` must be an integer or None')
+
         f = _lift_to_pd(self._pd.sample)
         return f(n=n, replace=replace, random_state=random_state)
 
@@ -136,12 +143,20 @@ class DataFrame(object):
         Get item from object for given key (ex: DataFrame column).
 
         :param key: Column label or list of column labels
-        :type key: single label or list of labels 
+        :type key: str label or list of str labels 
         :return: Series with the corresponding label or DataFrame with the corresponding labels
         :rtype: Series or DataFrame
         '''
+        if not isinstance(key, str) and not isinstance(key, Iterable):
+            raise TypeError('Argument `key` must be a string label or list of string labels')
+        mask = [key not in self.columns] if isinstance(key, str) else [x not in self.columns for x in key]
+        if any(mask):
+            k = [key] if isinstance(key, str) else key
+            raise KeyError('{} not found in columns'.format(np.array(k)[mask]))
+
         f = _lift_to_pd(self._pd.get)
         return f(key=key)
+
     # Creation
     def assign(self, **kwargs):
         '''
@@ -170,6 +185,9 @@ class DataFrame(object):
         :return: Result of applying func along the given axis of the DataFrame.
         :rtype: Series or DataFrame
         '''
+        if not callable(func):
+            raise TypeError('Argument `func` must be a function')
+
         f = _lift_to_pd(self._pd.apply)
         return f(func=func, axis=axis)
 
@@ -177,13 +195,22 @@ class DataFrame(object):
         '''
         Sort by the values along either axis.
 
-        :param by: Labels or list of labels to sort by.
+        :param by: String label or list of string labels to sort by.
         :param ascending: Sort ascending vs. descending.
         :type by: str or list of str
         :type param: bool, default True
         :return: DataFrame with sorted values.
         :rtype: DataFrame
         '''
+        if not isinstance(by, str) and not isinstance(by, Iterable):
+            raise TypeError('Argument `by` must be a string label or list of string labels')
+        mask = [by not in self.columns] if isinstance(by, str) else [x not in self.columns for x in by]
+        if any(mask):
+            b = [by] if isinstance(by, str) else by
+            raise KeyError('{} not found in columns'.format(np.array(b)[mask]))
+        if not isinstance(ascending, bool):
+            raise TypeError('Argument `ascending` must be a boolean')
+
         f = _lift_to_pd(self._pd.sort_values)
         return f(by=by, ascending=ascending)
 
@@ -208,7 +235,11 @@ class DataFrame(object):
         :rtype: DataFrameGroupBy
         '''
         if not isinstance(by, str) and not isinstance(by, Iterable):
-            raise ValueError('Wrong input type')
+            raise TypeError('Argument `by` must be a string label or list of string labels')
+        mask = [by not in self.columns] if isinstance(by, str) else [x not in self.columns for x in by]
+        if any(mask):
+            b = [by] if isinstance(by, str) else by
+            raise KeyError('{} not found in columns'.format(np.array(b)[mask]))
 
         f = _lift_to_pd(self._pd.groupby)
         return f(by=by)
@@ -224,6 +255,9 @@ class DataFrame(object):
         :return: DataFrame with the new index.
         :rtype: DataFrame
         '''
+        if not isinstance(drop, bool):
+            raise TypeError('Argument `drop` must be a boolean')
+
         f = _lift_to_pd(self._pd.reset_index)
         return f(drop=drop)
 
@@ -233,11 +267,20 @@ class DataFrame(object):
 
         :param keys: Key(s) to set index on.
         :param drop: Delete column(s) to be used as the new index.
-        :type keys: label or list of labels
+        :type keys: str label or list of str labels
         :type drop: bool, default True
         :return: DataFrame with changed row labels.
         :rtype: DataFrame
         '''
+        if not isinstance(keys, str) and not isinstance(keys, Iterable):
+            raise TypeError('Argument `keys` must be a string label or list of string labels')
+        mask = [keys not in self.columns] if isinstance(keys, str) else [x not in self.columns for x in keys]
+        if any(mask):
+            k = [keys] if isinstance(keys, str) else keys
+            raise KeyError('{} not found in columns'.format(np.array(k)[mask]))
+        if not isinstance(drop, bool):
+            raise TypeError('Argument `drop` must be a boolean')
+
         f = _lift_to_pd(self._pd.set_index)
         return f(keys=keys, drop=drop)
 
@@ -265,6 +308,9 @@ class DataFrame(object):
         :return: A DataFrame of the two merged objects.
         :rtype: DataFrame
         '''
+        # if not isinstance(right, DataFrame) and not isinstance(right, Series):
+        #     raise TypeError('Argument `right` must be a Series or a DataFrame')
+
         f = _lift_to_pd(self._pd.merge)
         return f(right=right, how=how, on=on, left_on=left_on, right_on=right_on)
 
@@ -355,10 +401,10 @@ class Series(object):
         
         :param n: Number of items from axis to return.
         :param replace: Sample with or without replacement.
-        :param random_state: Seed for the random number generator (if int), or numpy RandomState object.
+        :param random_state: Seed for the random number generator
         :type n: int, optional
         :type replace: bool, default False
-        :type random_state: int or numpy.random.RandomState, optional
+        :type random_state: int, optional
         :return: Series with *n* randomly sampled items.
         :rtype: Series
         '''
