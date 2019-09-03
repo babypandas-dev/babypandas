@@ -75,14 +75,14 @@ class DataFrame(object):
         :example:
 
         >>> df = bpd.DataFrame().assign(name=['falcon', 'parrot', 'lion'],
-        ...                             type=['bird', 'bird', 'mammal'])
+        ...                             kind=['bird', 'bird', 'mammal'])
         >>> df
-             name    type
+             name    kind
         0  falcon    bird
         1  parrot    bird
         2    lion  mammal
         >>> df.take([0, 2])
-             name    type
+             name    kind
         0  falcon    bird
         2    lion  mammal
         '''
@@ -104,6 +104,23 @@ class DataFrame(object):
         :type columns: str label or list of str labels
         :return: DataFrame with the dropped columns.
         :rtype: DataFrame
+
+        :example:
+
+        >>> df = bpd.DataFrame().assign(A=[0, 4, 8],
+        ...                             B=[1, 5, 9],
+        ...                             C=[2, 6, 10],
+        ...                             D=[3, 7, 11])
+        >>> df
+           A  B   C   D
+        0  0  1   2   3
+        1  4  5   6   7
+        2  8  9  10  11
+        >>> df.drop(columns=['B', 'C'])
+           A   D
+        0  0   3
+        1  4   7
+        2  8  11
         '''
         if not isinstance(columns, str) and not isinstance(columns, Iterable):
             raise TypeError('Argument `columns` must be a string label or list of string labels')
@@ -127,6 +144,15 @@ class DataFrame(object):
         :type random_state: int, optional
         :return: DataFrame with *n* randomly sampled rows.
         :rtype: DataFrame
+
+        :example:
+
+        >>> df = bpd.DataFrame().assign(letter=['a', 'b', 'c'],
+        ...                             count=[9, 3, 3],
+        ...                             points=[1, 2, 2])
+        >>> df.sample(1, random_state=0)
+            letter  count  points
+        2      c      3       2
         '''
         if not isinstance(n, int) and n != None:
             raise TypeError('Argument `n` not an integer')
@@ -146,6 +172,22 @@ class DataFrame(object):
         :type key: str label or list of str labels 
         :return: Series with the corresponding label or DataFrame with the corresponding labels
         :rtype: Series or DataFrame
+
+        :example:
+
+        >>> df = bpd.DataFrame().assign(letter=['a', 'b', 'c'],
+        ...                             count=[9, 3, 3],
+        ...                             points=[1, 2, 2])
+        >>> df.get('letter')
+        0    a
+        1    b
+        2    c
+        Name: letter, dtype: object
+        >>> df.get(['count', 'points'])
+           count  points
+        0      9       1
+        1      3       2
+        2      3       2
         '''
         if not isinstance(key, str) and not isinstance(key, Iterable):
             raise TypeError('Argument `key` must be a string label or list of string labels')
@@ -165,6 +207,14 @@ class DataFrame(object):
         :param kwargs: Keyword column names with a list of values.
         :return: DataFrame with the additional column(s).
         :rtype: DataFrame
+
+        :example:
+
+        >>> df = bpd.DataFrame().assign(flower=['sunflower', 'rose'])
+        >>> df.assign(color=['yellow', 'red'])
+              flower   color
+        0  sunflower  yellow
+        1       rose     red        
         '''
         f = _lift_to_pd(self._pd.assign)
         return f(**kwargs)

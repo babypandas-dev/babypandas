@@ -29,13 +29,13 @@ def df2():
 								  col4=[5, 5, 5, 9])
 
 def df3():
-	'''Animals and types'''
+	'''Animals and kinds'''
 	return bpd.DataFrame().assign(name=['dog', 'cat', 'pidgeon', 'chicken', 'snake'],
-								  type=['mammal', 'mammal', 'bird', 'bird', 'reptile'])
+								  kind=['mammal', 'mammal', 'bird', 'bird', 'reptile'])
 
 def df4():
-	'''Types'''
-	return bpd.DataFrame().assign(type=['mammal', 'bird', 'reptile'],
+	'''Kinds'''
+	return bpd.DataFrame().assign(kind=['mammal', 'bird', 'reptile'],
 								  short=['m',  'b', 'r'])
 
 def assert_equal(string1, string2):
@@ -75,7 +75,7 @@ def test_basic():
 	''')
 	assert_equal(df3(),
 	'''
-	      name     type
+	      name     kind
 	0      dog   mammal
 	1      cat   mammal
 	2  pidgeon     bird
@@ -84,7 +84,7 @@ def test_basic():
 	''')
 	assert_equal(df4(),
 	'''
-	      type short
+	      kind short
 	0   mammal     m
 	1     bird     b
 	2  reptile     r
@@ -198,12 +198,12 @@ def test_describe():
 
 def test_groupby():
 	df = df3()
-	gb = df.groupby('type')
+	gb = df.groupby('kind')
 	assert isinstance(gb, bpd.DataFrameGroupBy)
 	assert_equal(gb.count(),
 	'''
 	         name
-	type
+	kind
 	bird        2
 	mammal      2
 	reptile     1
@@ -254,7 +254,7 @@ def test_merge():
 	df_right = df4()
 	assert_equal(df_left.merge(df_right),
 	'''
-	      name     type short
+	      name     kind short
 	0      dog   mammal     m
 	1      cat   mammal     m
 	2  pidgeon     bird     b
