@@ -335,17 +335,19 @@ class DataFrame(object):
         return f(*args, **kwargs)
 
     # IO
-    def to_csv(self, path_or_buf=None):
+    def to_csv(self, path_or_buf=None, index=True):
         '''
         Write object to a comma-separated values (csv) file.
 
         :param path_or_buf: File path or object, if None is provided the result is returned as a string.
+        :param index: Write row names (index).
         :type path_or_buf: str or file handle, default None
+        :type index: bool, default True
         :return: If path_or_buf is None, returns the resulting csv format as a string. Otherwise returns None.
         :rtype: None or str
         '''
         f = _lift_to_pd(self._pd.to_csv)
-        return f(path_or_buf=path_or_buf)
+        return f(path_or_buf=path_or_buf, index=index)
 
     def to_numpy(self):
         '''
@@ -468,17 +470,19 @@ class Series(object):
         return f(*args, **kwargs)
 
     # IO
-    def to_csv(self, path_or_buf=None):
+    def to_csv(self, path_or_buf=None, index=True):
         '''
         Write object to a comma-separated values (csv) file.
         :param path_or_buf: File path or object, if None is provided the result is returned as a string.
-        :type parth_or_buf: str or file handle, default None
+        :param index: Write row names (index).
+        :type path_or_buf: str or file handle, default None
+        :type index: bool, default True
         :return: If path_or_buf is None, returns the resulting csv format as a string. Otherwise returns None.
         :rtype: None or str
 
         '''
         f = _lift_to_pd(self._pd.to_csv)
-        return f(path_or_buf=path_or_buf)
+        return f(path_or_buf=path_or_buf, index=index)
 
     def to_numpy(self):
         '''
