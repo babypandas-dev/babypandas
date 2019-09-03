@@ -3,7 +3,7 @@
 
 ---
 
-Goal: create a simplified introductory `pandas` library that allows for basic tabular data-analysis with only the necessary methods and arguments. Allows
+Simplified introductory `pandas` library that allows for basic tabular data-analysis with only the necessary methods and arguments. Allows
 for a smooth transition into `pandas`.
 
 ---
@@ -37,7 +37,7 @@ Berkeley `datascience` module equivalents with `pandas`:
 | table.group(col)                   | df.groupby(col).count()                                  | give counts of values in a col            |
 | table.group(col, agg_fn)           | df.groupby(col).agg_fn.reset_index()                     | groups by column, aggregates with fn      |
 | table.group([col1, col2])          | df.groupby([col1, col2]).count().reset_index()           | groups by two cols, agg with counts       |
-| table.group([col1, col2], sum)     | df.groupby[col1, col2]).sum().reset_index()              | groups by two cols, agg with fn           |
+| table.group([col1, col2], sum)     | df.groupby[col1, col2]).sum().reset_index()              | groups by two cols, agg with sum           |
 | table.join(leftcol, df2, rightcol) | df.merge(df2, left_on=leftcol, right_on=rightcol)        | merges two dataframes (diff col names)    |
 | table.join(col, df2, col)          | df.merge(df2, on=col)                                    | merges two dataframes (same col names)    |
 | table.sample(n)                    | df.sample(n, replace=True)                               | sample with replacement                   |

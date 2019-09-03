@@ -73,7 +73,6 @@ class DataFrame(object):
         :rtype: DataFrame
 
         :example:
-
         >>> df = bpd.DataFrame().assign(name=['falcon', 'parrot', 'lion'],
         ...                             kind=['bird', 'bird', 'mammal'])
         >>> df
@@ -106,7 +105,6 @@ class DataFrame(object):
         :rtype: DataFrame
 
         :example:
-
         >>> df = bpd.DataFrame().assign(A=[0, 4, 8],
         ...                             B=[1, 5, 9],
         ...                             C=[2, 6, 10],
@@ -146,7 +144,6 @@ class DataFrame(object):
         :rtype: DataFrame
 
         :example:
-
         >>> df = bpd.DataFrame().assign(letter=['a', 'b', 'c'],
         ...                             count=[9, 3, 3],
         ...                             points=[1, 2, 2])
@@ -174,7 +171,6 @@ class DataFrame(object):
         :rtype: Series or DataFrame
 
         :example:
-
         >>> df = bpd.DataFrame().assign(letter=['a', 'b', 'c'],
         ...                             count=[9, 3, 3],
         ...                             points=[1, 2, 2])
@@ -209,7 +205,6 @@ class DataFrame(object):
         :rtype: DataFrame
 
         :example:
-
         >>> df = bpd.DataFrame().assign(flower=['sunflower', 'rose'])
         >>> df.assign(color=['yellow', 'red'])
               flower   color
@@ -234,6 +229,16 @@ class DataFrame(object):
         :type axis: {0 or ‘index’, 1 or ‘columns’}, default 0
         :return: Result of applying func along the given axis of the DataFrame.
         :rtype: Series or DataFrame
+
+        :example:
+        >>> def add_two(row):
+        ...     return row + 2
+        >>> df = bpd.DataFrame(A=[1, 1],
+        ...                    B=[2, 2])
+        >>> df.apply(add_two)
+           A  B
+        0  3  4
+        1  3  4
         '''
         if not callable(func):
             raise TypeError('Argument `func` must be a function')
@@ -251,6 +256,23 @@ class DataFrame(object):
         :type param: bool, default True
         :return: DataFrame with sorted values.
         :rtype: DataFrame
+
+        :example:
+        >>> df = bpd.DataFrame().assign(name=['Sally', 'George', 'Bill', 'Ann'],
+        ...                             age=[21, 25, 18, 28],
+        ...                             height_cm=[161, 168, 171, 149])
+        >>> df.sort_values(by='age')
+             name  age  height_cm
+        2    Bill   18        171
+        0   Sally   21        161
+        1  George   25        168
+        3     Ann   28        149
+        >>> df.sort_values(by='height_cm', ascending=False)
+             name  age  height_cm
+        2    Bill   18        171
+        1  George   25        168
+        0   Sally   21        161
+        3     Ann   28        149
         '''
         if not isinstance(by, str) and not isinstance(by, Iterable):
             raise TypeError('Argument `by` must be a string label or list of string labels')
@@ -271,6 +293,20 @@ class DataFrame(object):
 
         :return: Summary statistics of the DataFrame provided.
         :rtype: DataFrame
+
+        :example:
+        >>> df = bpd.DataFrame().assign(A=[0, 10, 20],
+        ...                             B=[1, 2, 3])
+        >>> df.describe()
+                  A    B
+        count   3.0  3.0
+        mean   10.0  2.0
+        std    10.0  1.0
+        min     0.0  1.0
+        25%     5.0  1.5
+        50%    10.0  2.0
+        75%    15.0  2.5
+        max    20.0  3.0
         '''
         f = _lift_to_pd(self._pd.describe)
         return f()
@@ -283,6 +319,15 @@ class DataFrame(object):
         :type by: label, or list of labels
         :return: Groupby object that contains information about the groups.
         :rtype: DataFrameGroupBy
+
+        :example:
+        >>> df =bpd.DataFrame(animal=['Falcon', 'Falcon', 'Parrot', 'Parrot'],
+        ...                   max_speed=[380, 370, 24, 26])
+        >>> df.groupby('animal').mean()
+                max_speed
+        animal
+        Falcon      375.0
+        Parrot       25.0
         '''
         if not isinstance(by, str) and not isinstance(by, Iterable):
             raise TypeError('Argument `by` must be a string label or list of string labels')
@@ -304,6 +349,25 @@ class DataFrame(object):
         :type drop: bool, default False
         :return: DataFrame with the new index.
         :rtype: DataFrame
+
+        :example:
+        >>> df = bpd.DataFrame().assign(name=['Sally', 'George', 'Bill', 'Ann'],
+        ...                             age=[21, 25, 18, 28],
+        ...                             height_cm=[161, 168, 171, 149])
+        >>> sorted = df.sort_values(by='age')
+        >>> sorted
+             name  age  height_cm
+        2    Bill   18        171
+        0   Sally   21        161
+        1  George   25        168
+        3     Ann   28        149
+        >>> sorted.reset_index(drop=True)
+             name  age  height_cm
+        0    Bill   18        171
+        1   Sally   21        161
+        2  George   25        168
+        3     Ann   28        149
+
         '''
         if not isinstance(drop, bool):
             raise TypeError('Argument `drop` must be a boolean')
@@ -321,6 +385,18 @@ class DataFrame(object):
         :type drop: bool, default True
         :return: DataFrame with changed row labels.
         :rtype: DataFrame
+
+        :example:
+        >>> df = bpd.DataFrame().assign(name=['Sally', 'George', 'Bill', 'Ann'],
+        ...                             age=[21, 25, 18, 28],
+        ...                             height_cm=[161, 168, 171, 149])
+        >>> df.set_index('name')
+                age  height_cm
+        name
+        Sally    21        161
+        George   25        168
+        Bill     18        171
+        Ann      28        149
         '''
         if not isinstance(keys, str) and not isinstance(keys, Iterable):
             raise TypeError('Argument `keys` must be a string label or list of string labels')
@@ -351,15 +427,20 @@ class DataFrame(object):
         :param left_on: Column or index level names to join on in the left DataFrame.
         :param right_on: Column or index level names to join on in the right DataFrame.
         :type right: DataFrame or named Series
-        :type how: {‘left’, ‘right’, ‘outer’, ‘inner’}, default ‘inner’
+        :type how: {'left', 'right', 'outer', 'inner'}, default 'inner'
         :type on: label or list of labels
         :type left_on: label or list of labels
         :type right_on: label or list of labels
         :return: A DataFrame of the two merged objects.
         :rtype: DataFrame
+
+        :example:
         '''
-        # if not isinstance(right, DataFrame) and not isinstance(right, Series):
+        # if not isinstance(right, self.__class__) and not isinstance(right, Series):
         #     raise TypeError('Argument `right` must be a Series or a DataFrame')
+        if how not in ['left', 'right', 'outer', 'inner']:
+            raise ValueError('Argument `how` must be either \'left\', \'right\', \'outer\', or \'inner\'')
+        # TODO
 
         f = _lift_to_pd(self._pd.merge)
         return f(right=right, how=how, on=on, left_on=left_on, right_on=right_on)
@@ -372,6 +453,8 @@ class DataFrame(object):
         :type other: DataFrame or Series/dict-like object, or list of these
         :return: DataFrame with appended rows.
         :rtype: DataFrame
+
+        :example:
         '''
         f = _lift_to_pd(self._pd.append)
         return f(other=other)
