@@ -153,7 +153,7 @@ class DataFrame(object):
         '''
         if not isinstance(n, int) and n != None:
             raise TypeError('Argument `n` not an integer')
-        if not isinstance(replace, bool) and replace != None:
+        if not isinstance(replace, bool):
             raise TypeError('Argument `replace` not a boolean')
         if not isinstance(random_state, int) and random_state != None:
             raise TypeError('Argument `random_state` must be an integer or None')
@@ -242,6 +242,8 @@ class DataFrame(object):
         '''
         if not callable(func):
             raise TypeError('Argument `func` must be a function')
+        if axis not in [0, 1]:
+            raise ValueError('Argument `axis` must be either 0 or 1')
 
         f = _lift_to_pd(self._pd.apply)
         return f(func=func, axis=axis)
@@ -280,7 +282,7 @@ class DataFrame(object):
         if any(mask):
             b = [by] if isinstance(by, str) else by
             raise KeyError('{} not found in columns'.format(np.array(b)[mask]))
-        if not isinstance(ascending, bool) and ascending != None:
+        if not isinstance(ascending, bool):
             raise TypeError('Argument `ascending` must be a boolean')
 
         f = _lift_to_pd(self._pd.sort_values)
@@ -369,7 +371,7 @@ class DataFrame(object):
         3     Ann   28        149
 
         '''
-        if not isinstance(drop, bool) and drop != None:
+        if not isinstance(drop, bool):
             raise TypeError('Argument `drop` must be a boolean')
 
         f = _lift_to_pd(self._pd.reset_index)
@@ -404,7 +406,7 @@ class DataFrame(object):
         if any(mask):
             k = [keys] if isinstance(keys, str) else keys
             raise KeyError('{} not found in columns'.format(np.array(k)[mask]))
-        if not isinstance(drop, bool) and drop != None:
+        if not isinstance(drop, bool):
             raise TypeError('Argument `drop` must be a boolean')
 
         f = _lift_to_pd(self._pd.set_index)
@@ -435,12 +437,30 @@ class DataFrame(object):
         :rtype: DataFrame
 
         :example:
+        >>> df1 = bpd.DataFrame().assign(pet=['dog', 'cat', 'lizard', 'turtle'],
+        ...                              kind=['mammal', 'mammal', 'reptile', 'reptile'])
+        >>> df2 = bpd.DataFrame().assign(kind=['mammal', 'reptile', 'amphibian'],
+        ...                              abr=['m', 'r', 'a'])
+        >>> df1.merge(df2, on='kind')
+              pet     kind abr
+        0     dog   mammal   m
+        1     cat   mammal   m
+        2  lizard  reptile   r
+        3  turtle  reptile   r
         '''
-        # if not isinstance(right, self.__class__) and not isinstance(right, Series):
-        #     raise TypeError('Argument `right` must be a Series or a DataFrame')
+        if not isinstance(right, DataFrame):
+            raise TypeError('Argument `right` must by a DataFrame')
         if how not in ['left', 'right', 'outer', 'inner']:
             raise ValueError('Argument `how` must be either \'left\', \'right\', \'outer\', or \'inner\'')
-        # TODO
+        if (on not in self._pd.columns or on not in right.columns) and on != None:
+            raise KeyError('Label \'{}\' not found in both DataFrames'.format(on))
+        if (left_on == None and right_on != None) or (left_on != None and right_on == None):
+            raise KeyError('Both `left_on` and `right_on` must be column labels')
+        if left_on != None and right_on != None:
+            if left_on not in self._pd.columns:
+                raise KeyError('Label \'{}\' not found in left DataFrame'.format(left_on))
+            if right_on not in right.columns:
+                raise KeyError('Label \'{}\' not found in right DataFrame'.format(right_on))
 
         f = _lift_to_pd(self._pd.merge)
         return f(right=right, how=how, on=on, left_on=left_on, right_on=right_on)
@@ -456,6 +476,8 @@ class DataFrame(object):
 
         :example:
         '''
+        # TODO
+
         f = _lift_to_pd(self._pd.append)
         return f(other=other)
 
@@ -479,6 +501,9 @@ class DataFrame(object):
         :return: If path_or_buf is None, returns the resulting csv format as a string. Otherwise returns None.
         :rtype: None or str
         '''
+        if not isinstance(index, bool):
+            raise TypeError('Argument `index` must be a boolean')
+
         f = _lift_to_pd(self._pd.to_csv)
         return f(path_or_buf=path_or_buf, index=index)
 
