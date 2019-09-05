@@ -87,9 +87,9 @@ class DataFrame(object):
         '''
         if not isinstance(indices, Iterable):
             raise TypeError('Argument `indices` must be a list-like object')
-        if not all(isinstance(x, int) for x in indices):
+        if not all(isinstance(x, (int, np.integer)) for x in indices):
             raise ValueError('Argument `indices` must only contain integers')
-        if not all(x in self.index for x in indices):
+        if len(indices) > self._pd.shape[0]:
             raise IndexError('Indices are out-of-bounds')
 
         f = _lift_to_pd(self._pd.take)
@@ -120,7 +120,7 @@ class DataFrame(object):
         1  4   7
         2  8  11
         '''
-        if not isinstance(columns, str) and not isinstance(columns, Iterable):
+        if not isinstance(columns, Iterable):
             raise TypeError('Argument `columns` must be a string label or list of string labels')
         mask = [columns not in self.columns] if isinstance(columns, str) else [x not in self.columns for x in columns]
         if any(mask):
@@ -274,13 +274,13 @@ class DataFrame(object):
         0   Sally   21        161
         3     Ann   28        149
         '''
-        if not isinstance(by, str) and not isinstance(by, Iterable):
+        if not isinstance(by, Iterable):
             raise TypeError('Argument `by` must be a string label or list of string labels')
         mask = [by not in self.columns] if isinstance(by, str) else [x not in self.columns for x in by]
         if any(mask):
             b = [by] if isinstance(by, str) else by
             raise KeyError('{} not found in columns'.format(np.array(b)[mask]))
-        if not isinstance(ascending, bool):
+        if not isinstance(ascending, bool) and ascending != None:
             raise TypeError('Argument `ascending` must be a boolean')
 
         f = _lift_to_pd(self._pd.sort_values)
@@ -329,7 +329,7 @@ class DataFrame(object):
         Falcon      375.0
         Parrot       25.0
         '''
-        if not isinstance(by, str) and not isinstance(by, Iterable):
+        if not isinstance(by, Iterable):
             raise TypeError('Argument `by` must be a string label or list of string labels')
         mask = [by not in self.columns] if isinstance(by, str) else [x not in self.columns for x in by]
         if any(mask):
@@ -369,7 +369,7 @@ class DataFrame(object):
         3     Ann   28        149
 
         '''
-        if not isinstance(drop, bool):
+        if not isinstance(drop, bool) and drop != None:
             raise TypeError('Argument `drop` must be a boolean')
 
         f = _lift_to_pd(self._pd.reset_index)
@@ -398,13 +398,13 @@ class DataFrame(object):
         Bill     18        171
         Ann      28        149
         '''
-        if not isinstance(keys, str) and not isinstance(keys, Iterable):
+        if not isinstance(keys, Iterable):
             raise TypeError('Argument `keys` must be a string label or list of string labels')
         mask = [keys not in self.columns] if isinstance(keys, str) else [x not in self.columns for x in keys]
         if any(mask):
             k = [keys] if isinstance(keys, str) else keys
             raise KeyError('{} not found in columns'.format(np.array(k)[mask]))
-        if not isinstance(drop, bool):
+        if not isinstance(drop, bool) and drop != None:
             raise TypeError('Argument `drop` must be a boolean')
 
         f = _lift_to_pd(self._pd.set_index)
