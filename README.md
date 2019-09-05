@@ -13,7 +13,7 @@ Berkeley `datascience` module equivalents with `pandas`:
 | `datascience` function             | `pandas` equivalent or close                             | function description                      |
 |------------------------------------|----------------------------------------------------------|-------------------------------------------|
 | `Table()`                            | `pd.DataFrame()`                                           | empty table formation                     |
-| `Table().with_columns()`             | `pd.DataFrame().assign()                                    | table from lists                          |
+| `Table().with_columns()`             | `pd.DataFrame().assign()`                                    | table from lists                          |
 | `table.with_columns()`               | `df.assign()`                                              | adding columns                            |
 | `Table.read_table()`                 | `pd.read_csv()`                                            | read in data                              |
 | `table.num_columns`                  | `df.shape[1]`                                              | number of columns                         |
@@ -21,8 +21,8 @@ Berkeley `datascience` module equivalents with `pandas`:
 | `table.labels`                       | `df.columns`                                               | list of columns                           |
 | `table.relabeled(label, new_label)`  | `df.assign(new_label=df.get(label)).drop(columns=[label])` | rename columns                            |
 | `table.column(col)`                  | `df.get(col), df[col]`                                     | get a specific column (by name)           |
-| `table.column(0)`                    | `df.iloc[:, 0]                                            | get a specific column (by index)          |
-| `table.column(col).item(0)`          | `df.get(col).iloc[0]                                      | get a specific value in the table         |
+| `table.column(0)`                    | `df.iloc[:, 0]`                                            | get a specific column (by index)          |
+| `table.column(col).item(0)`          | `df.get(col).iloc[0]`                                      | get a specific value in the table         |
 | `table.select(col1, col2)`           | `df.get([col1, col2])`                                     | get columns as a df                       |
 | `table.drop(col1, col2)`             | `df.drop(columns=[col1, col2])`                            | drop columns                              |
 | `table.sort(col)`                    | `df.sort_values(by=col)`                                   | sorts values in a dataframe by col        |
@@ -37,7 +37,7 @@ Berkeley `datascience` module equivalents with `pandas`:
 | `table.group(col)`                   | `df.groupby(col).count()`                                  | give counts of values in a col            |
 | `table.group(col, agg_fn)`           | `df.groupby(col).agg_fn.reset_index()`                     | groups by column, aggregates with fn      |
 | `table.group([col1, col2])`          | `df.groupby([col1, col2]).count().reset_index()`           | groups by two cols, agg with counts       |
-| `table.group([col1, col2], sum)`     | `df.groupby[col1, col2]).sum().reset_index()`              | groups by two cols, agg with sum           |
+| `table.group([col1, col2], sum)`     | `df.groupby[col1, col2]).sum().reset_index()`              | groups by two cols, agg with sum          |
 | `table.join(leftcol, df2, rightcol)` | `df.merge(df2, left_on=leftcol, right_on=rightcol)`        | merges two dataframes (diff col names)    |
 | `table.join(col, df2, col)`          | `df.merge(df2, on=col)`                                    | merges two dataframes (same col names)    |
 | `table.sample(n)`                    | `df.sample(n, replace=True)`                               | sample with replacement                   |
