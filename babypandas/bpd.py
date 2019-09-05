@@ -1,4 +1,6 @@
 import pandas as pd
+import numpy as np
+from collections.abc import Iterable
 
 pd.set_option("display.max_rows", 10)
 
@@ -64,50 +66,223 @@ class DataFrame(object):
     def take(self, indices):
         '''
         Return the elements in the given positional indices along an axis.
+
+        :param indices: An array of ints indicating which positions to take.
+        :type indices: list of ints
+        :return: DataFrame with the given positional indices.
+        :rtype: DataFrame
+
+        :example:
+        >>> df = bpd.DataFrame().assign(name=['falcon', 'parrot', 'lion'],
+        ...                             kind=['bird', 'bird', 'mammal'])
+        >>> df
+             name    kind
+        0  falcon    bird
+        1  parrot    bird
+        2    lion  mammal
+        >>> df.take([0, 2])
+             name    kind
+        0  falcon    bird
+        2    lion  mammal
         '''
+        if not isinstance(indices, Iterable):
+            raise TypeError('Argument `indices` must be a list-like object')
+        if not all(isinstance(x, (int, np.integer)) for x in indices):
+            raise ValueError('Argument `indices` must only contain integers')
+        if len(indices) > self._pd.shape[0]:
+            raise IndexError('Indices are out-of-bounds')
+
         f = _lift_to_pd(self._pd.take)
         return f(indices=indices)
 
     def drop(self, columns=None):
         '''
         Drop specified labels from rows or columns.
+
+        :param columns: Column labels to drop.
+        :type columns: str label or list of str labels
+        :return: DataFrame with the dropped columns.
+        :rtype: DataFrame
+
+        :example:
+        >>> df = bpd.DataFrame().assign(A=[0, 4, 8],
+        ...                             B=[1, 5, 9],
+        ...                             C=[2, 6, 10],
+        ...                             D=[3, 7, 11])
+        >>> df
+           A  B   C   D
+        0  0  1   2   3
+        1  4  5   6   7
+        2  8  9  10  11
+        >>> df.drop(columns=['B', 'C'])
+           A   D
+        0  0   3
+        1  4   7
+        2  8  11
         '''
+        if not isinstance(columns, Iterable):
+            raise TypeError('Argument `columns` must be a string label or list of string labels')
+        mask = [columns not in self.columns] if isinstance(columns, str) else [x not in self.columns for x in columns]
+        if any(mask):
+            c = [columns] if isinstance(columns, str) else columns
+            raise KeyError('{} not found in columns'.format(np.array(c)[mask]))
+
         f = _lift_to_pd(self._pd.drop)
         return f(columns=columns)
 
-    def sample(self, n=None, replace=False):
+    def sample(self, n=None, replace=False, random_state=None):
         '''
         Return a random sample of items from an axis of object.
+
+        :param n: Number of items from axis to return.
+        :param replace: Sample with or without replacement.
+        :param random_state: Seed for the random number generator
+        :type n: int, optional
+        :type replace: bool, default False
+        :type random_state: int, optional
+        :return: DataFrame with *n* randomly sampled rows.
+        :rtype: DataFrame
+
+        :example:
+        >>> df = bpd.DataFrame().assign(letter=['a', 'b', 'c'],
+        ...                             count=[9, 3, 3],
+        ...                             points=[1, 2, 2])
+        >>> df.sample(1, random_state=0)
+            letter  count  points
+        2      c      3       2
         '''
+        if not isinstance(n, int) and n != None:
+            raise TypeError('Argument `n` not an integer')
+        if not isinstance(replace, bool) and replace != None:
+            raise TypeError('Argument `replace` not a boolean')
+        if not isinstance(random_state, int) and random_state != None:
+            raise TypeError('Argument `random_state` must be an integer or None')
+
         f = _lift_to_pd(self._pd.sample)
-        return f(n=n, replace=replace)
+        return f(n=n, replace=replace, random_state=random_state)
 
     def get(self, key):
         '''
         Get item from object for given key (ex: DataFrame column).
+
+        :param key: Column label or list of column labels
+        :type key: str label or list of str labels 
+        :return: Series with the corresponding label or DataFrame with the corresponding labels
+        :rtype: Series or DataFrame
+
+        :example:
+        >>> df = bpd.DataFrame().assign(letter=['a', 'b', 'c'],
+        ...                             count=[9, 3, 3],
+        ...                             points=[1, 2, 2])
+        >>> df.get('letter')
+        0    a
+        1    b
+        2    c
+        Name: letter, dtype: object
+        >>> df.get(['count', 'points'])
+           count  points
+        0      9       1
+        1      3       2
+        2      3       2
         '''
+        if not isinstance(key, str) and not isinstance(key, Iterable):
+            raise TypeError('Argument `key` must be a string label or list of string labels')
+        mask = [key not in self.columns] if isinstance(key, str) else [x not in self.columns for x in key]
+        if any(mask):
+            k = [key] if isinstance(key, str) else key
+            raise KeyError('{} not found in columns'.format(np.array(k)[mask]))
+
         f = _lift_to_pd(self._pd.get)
         return f(key=key)
+
     # Creation
     def assign(self, **kwargs):
         '''
         Assign new columns to a DataFrame.
+
+        :param kwargs: Keyword column names with a list of values.
+        :return: DataFrame with the additional column(s).
+        :rtype: DataFrame
+
+        :example:
+        >>> df = bpd.DataFrame().assign(flower=['sunflower', 'rose'])
+        >>> df.assign(color=['yellow', 'red'])
+              flower   color
+        0  sunflower  yellow
+        1       rose     red        
         '''
         f = _lift_to_pd(self._pd.assign)
         return f(**kwargs)
 
     # Transformation
-    def apply(self, func, axis=0, **kwds):
+    def apply(self, func, axis=0):
         '''
         Apply a function along an axis of the DataFrame.
+
+        :param func: Function to apply to each column or row.
+        :param axis: Axis along which the function is applied:
+            
+            - 0 or 'index': apply function to each column.
+            - 1 or 'columns': apply function to each row.
+
+        :type func: function
+        :type axis: {0 or ‘index’, 1 or ‘columns’}, default 0
+        :return: Result of applying func along the given axis of the DataFrame.
+        :rtype: Series or DataFrame
+
+        :example:
+        >>> def add_two(row):
+        ...     return row + 2
+        >>> df = bpd.DataFrame(A=[1, 1],
+        ...                    B=[2, 2])
+        >>> df.apply(add_two)
+           A  B
+        0  3  4
+        1  3  4
         '''
+        if not callable(func):
+            raise TypeError('Argument `func` must be a function')
+
         f = _lift_to_pd(self._pd.apply)
-        return f(func=func, axis=axis, **kwds)
+        return f(func=func, axis=axis)
 
     def sort_values(self, by, ascending=True):
         '''
         Sort by the values along either axis.
+
+        :param by: String label or list of string labels to sort by.
+        :param ascending: Sort ascending vs. descending.
+        :type by: str or list of str
+        :type param: bool, default True
+        :return: DataFrame with sorted values.
+        :rtype: DataFrame
+
+        :example:
+        >>> df = bpd.DataFrame().assign(name=['Sally', 'George', 'Bill', 'Ann'],
+        ...                             age=[21, 25, 18, 28],
+        ...                             height_cm=[161, 168, 171, 149])
+        >>> df.sort_values(by='age')
+             name  age  height_cm
+        2    Bill   18        171
+        0   Sally   21        161
+        1  George   25        168
+        3     Ann   28        149
+        >>> df.sort_values(by='height_cm', ascending=False)
+             name  age  height_cm
+        2    Bill   18        171
+        1  George   25        168
+        0   Sally   21        161
+        3     Ann   28        149
         '''
+        if not isinstance(by, Iterable):
+            raise TypeError('Argument `by` must be a string label or list of string labels')
+        mask = [by not in self.columns] if isinstance(by, str) else [x not in self.columns for x in by]
+        if any(mask):
+            b = [by] if isinstance(by, str) else by
+            raise KeyError('{} not found in columns'.format(np.array(b)[mask]))
+        if not isinstance(ascending, bool) and ascending != None:
+            raise TypeError('Argument `ascending` must be a boolean')
+
         f = _lift_to_pd(self._pd.sort_values)
         return f(by=by, ascending=ascending)
 
@@ -115,6 +290,23 @@ class DataFrame(object):
         '''
         Generate descriptive statistics that summarize the central 
         tendency, dispersion and shape of a dataset’s distribution.
+
+        :return: Summary statistics of the DataFrame provided.
+        :rtype: DataFrame
+
+        :example:
+        >>> df = bpd.DataFrame().assign(A=[0, 10, 20],
+        ...                             B=[1, 2, 3])
+        >>> df.describe()
+                  A    B
+        count   3.0  3.0
+        mean   10.0  2.0
+        std    10.0  1.0
+        min     0.0  1.0
+        25%     5.0  1.5
+        50%    10.0  2.0
+        75%    15.0  2.5
+        max    20.0  3.0
         '''
         f = _lift_to_pd(self._pd.describe)
         return f()
@@ -122,7 +314,28 @@ class DataFrame(object):
     def groupby(self, by=None):
         '''
         Group DataFrame or Series using a mapper or by a Series of columns.
+
+        :param by: Used to determine the groups for the groupby.
+        :type by: label, or list of labels
+        :return: Groupby object that contains information about the groups.
+        :rtype: DataFrameGroupBy
+
+        :example:
+        >>> df =bpd.DataFrame(animal=['Falcon', 'Falcon', 'Parrot', 'Parrot'],
+        ...                   max_speed=[380, 370, 24, 26])
+        >>> df.groupby('animal').mean()
+                max_speed
+        animal
+        Falcon      375.0
+        Parrot       25.0
         '''
+        if not isinstance(by, Iterable):
+            raise TypeError('Argument `by` must be a string label or list of string labels')
+        mask = [by not in self.columns] if isinstance(by, str) else [x not in self.columns for x in by]
+        if any(mask):
+            b = [by] if isinstance(by, str) else by
+            raise KeyError('{} not found in columns'.format(np.array(b)[mask]))
+
         f = _lift_to_pd(self._pd.groupby)
         return f(by=by)
 
@@ -131,11 +344,69 @@ class DataFrame(object):
         Reset the index of the DataFrame, and use the default one 
         instead. If the DataFrame has a MultiIndex, this method can 
         remove one or more levels.
+
+        :param drop: Does not insert index as a column.
+        :type drop: bool, default False
+        :return: DataFrame with the new index.
+        :rtype: DataFrame
+
+        :example:
+        >>> df = bpd.DataFrame().assign(name=['Sally', 'George', 'Bill', 'Ann'],
+        ...                             age=[21, 25, 18, 28],
+        ...                             height_cm=[161, 168, 171, 149])
+        >>> sorted = df.sort_values(by='age')
+        >>> sorted
+             name  age  height_cm
+        2    Bill   18        171
+        0   Sally   21        161
+        1  George   25        168
+        3     Ann   28        149
+        >>> sorted.reset_index(drop=True)
+             name  age  height_cm
+        0    Bill   18        171
+        1   Sally   21        161
+        2  George   25        168
+        3     Ann   28        149
+
         '''
+        if not isinstance(drop, bool) and drop != None:
+            raise TypeError('Argument `drop` must be a boolean')
+
         f = _lift_to_pd(self._pd.reset_index)
         return f(drop=drop)
 
     def set_index(self, keys, drop=True):
+        '''
+        Set the DataFrame index using existing columns.
+
+        :param keys: Key(s) to set index on.
+        :param drop: Delete column(s) to be used as the new index.
+        :type keys: str label or list of str labels
+        :type drop: bool, default True
+        :return: DataFrame with changed row labels.
+        :rtype: DataFrame
+
+        :example:
+        >>> df = bpd.DataFrame().assign(name=['Sally', 'George', 'Bill', 'Ann'],
+        ...                             age=[21, 25, 18, 28],
+        ...                             height_cm=[161, 168, 171, 149])
+        >>> df.set_index('name')
+                age  height_cm
+        name
+        Sally    21        161
+        George   25        168
+        Bill     18        171
+        Ann      28        149
+        '''
+        if not isinstance(keys, Iterable):
+            raise TypeError('Argument `keys` must be a string label or list of string labels')
+        mask = [keys not in self.columns] if isinstance(keys, str) else [x not in self.columns for x in keys]
+        if any(mask):
+            k = [keys] if isinstance(keys, str) else keys
+            raise KeyError('{} not found in columns'.format(np.array(k)[mask]))
+        if not isinstance(drop, bool) and drop != None:
+            raise TypeError('Argument `drop` must be a boolean')
+
         f = _lift_to_pd(self._pd.set_index)
         return f(keys=keys, drop=drop)
 
@@ -143,13 +414,47 @@ class DataFrame(object):
     def merge(self, right, how='inner', on=None, left_on=None, right_on=None):
         '''
         Merge DataFrame or named Series objects with a database-style join.
+
+        :param right: Object to merge with
+        :param how: Type of merge to be performed.
+            
+            - left: use only keys from left frame, similar to a SQL left outer join; preserve key order.
+            - right: use only keys from right frame, similar to a SQL right outer join; preserve key order.
+            - outer: use union of keys from both frames, similar to a SQL full outer join; sort keys lexicographically.
+            - inner: use intersection of keys from both frames, similar to a SQL inner join; preserve the order of the left keys.
+        
+        :param on: Column or index level names to join on. These must be found in both DataFrames.
+        :param left_on: Column or index level names to join on in the left DataFrame.
+        :param right_on: Column or index level names to join on in the right DataFrame.
+        :type right: DataFrame or named Series
+        :type how: {'left', 'right', 'outer', 'inner'}, default 'inner'
+        :type on: label or list of labels
+        :type left_on: label or list of labels
+        :type right_on: label or list of labels
+        :return: A DataFrame of the two merged objects.
+        :rtype: DataFrame
+
+        :example:
         '''
+        # if not isinstance(right, self.__class__) and not isinstance(right, Series):
+        #     raise TypeError('Argument `right` must be a Series or a DataFrame')
+        if how not in ['left', 'right', 'outer', 'inner']:
+            raise ValueError('Argument `how` must be either \'left\', \'right\', \'outer\', or \'inner\'')
+        # TODO
+
         f = _lift_to_pd(self._pd.merge)
         return f(right=right, how=how, on=on, left_on=left_on, right_on=right_on)
 
     def append(self, other):
         '''
         Append rows of other to the end of caller, returning a new object.
+
+        :param other: The data to append.
+        :type other: DataFrame or Series/dict-like object, or list of these
+        :return: DataFrame with appended rows.
+        :rtype: DataFrame
+
+        :example:
         '''
         f = _lift_to_pd(self._pd.append)
         return f(other=other)
@@ -163,16 +468,26 @@ class DataFrame(object):
         return f(*args, **kwargs)
 
     # IO
-    def to_csv(self, path_or_buf=None):
+    def to_csv(self, path_or_buf=None, index=True):
         '''
         Write object to a comma-separated values (csv) file.
+
+        :param path_or_buf: File path or object, if None is provided the result is returned as a string.
+        :param index: Write row names (index).
+        :type path_or_buf: str or file handle, default None
+        :type index: bool, default True
+        :return: If path_or_buf is None, returns the resulting csv format as a string. Otherwise returns None.
+        :rtype: None or str
         '''
         f = _lift_to_pd(self._pd.to_csv)
-        return f(path_or_buf=path_or_buf)
+        return f(path_or_buf=path_or_buf, index=index)
 
     def to_numpy(self):
         '''
         Convert the DataFrame to a NumPy array.
+
+        :return: DataFrame as a NumPy array.
+        :rtype: NumPy array
         '''
         f = _lift_to_pd(self._pd.to_numpy)
         return f()
@@ -193,6 +508,8 @@ class Series(object):
         self.iloc = DataFrameIndexer(self._pd.iloc)
 
         self.shape = _lift_to_pd(self._pd.shape)
+        self.index = _lift_to_pd(self._pd.index)
+        self.values = _lift_to_pd(self._pd.values)
 
     # Formatting
     def __repr__(self):
@@ -205,28 +522,51 @@ class Series(object):
     def take(self, indices):
         '''
         Return the elements in the given positional indices along an axis.
+
+        :param indices: An array of ints indicating which positions to take.
+        :type indices: list of ints
+        :return: Series with the given positional indices.
         '''
         f = _lift_to_pd(self._pd.take)
         return f(indices)
 
-    def sample(self, n=None, replace=False):
+    def sample(self, n=None, replace=False, random_state=None):
         '''
         Return a random sample of items from an axis of object.
+        
+        :param n: Number of items from axis to return.
+        :param replace: Sample with or without replacement.
+        :param random_state: Seed for the random number generator
+        :type n: int, optional
+        :type replace: bool, default False
+        :type random_state: int, optional
+        :return: Series with *n* randomly sampled items.
+        :rtype: Series
         '''
         f = _lift_to_pd(self._pd.sample)
-        return f(n=n, replace=replace)
+        return f(n=n, replace=replace, random_state=random_state)
 
     # Transformation
-    def apply(self, func, **kwds):
+    def apply(self, func):
         '''
         Invoke function on values of Series.
+
+        :param func: Function to apply.
+        :type func: function
+        :return: Result of applying func to the Series.
+        :rtype: Series
         '''
         f = _lift_to_pd(self._pd.apply)
-        return f(func=func, **kwds)
+        return f(func=func)
 
     def sort_values(self, ascending=True):
         '''
         Sort by the values
+
+        :param ascending: Sort ascending vs. descending.
+        :type ascending: bool, default True
+        :return: Series with sorted values.
+        :rtype: Series
         '''
         f = _lift_to_pd(self._pd.sort_values)
         return f(ascending=ascending)
@@ -235,6 +575,9 @@ class Series(object):
         '''
         Generate descriptive statistics that summarize the central tendency, 
         dispersion and shape of a dataset’s distribution.
+
+        :return: Summary statistics of the Series provided.
+        :rtype: Series
         '''
         f = _lift_to_pd(self._pd.describe)
         return f()
@@ -242,6 +585,11 @@ class Series(object):
     def reset_index(self, drop=False):
         '''
         Generate a new DataFrame or Series with the index reset.
+
+        :param drop: Does not insert index as a column.
+        :type drop: bool, default False
+        :return: When drop is False (the default), a DataFrame is returned. The newly created columns will come first in the DataFrame, followed by the original Series values. When drop is True, a Series is returned.
+        :rtype: Series or DataFrame
         '''
         f = _lift_to_pd(self._pd.reset_index)
         return f(drop=drop)
@@ -255,16 +603,26 @@ class Series(object):
         return f(*args, **kwargs)
 
     # IO
-    def to_csv(self, *args, **kwargs):
+    def to_csv(self, path_or_buf=None, index=True):
         '''
         Write object to a comma-separated values (csv) file.
+        :param path_or_buf: File path or object, if None is provided the result is returned as a string.
+        :param index: Write row names (index).
+        :type path_or_buf: str or file handle, default None
+        :type index: bool, default True
+        :return: If path_or_buf is None, returns the resulting csv format as a string. Otherwise returns None.
+        :rtype: None or str
+
         '''
         f = _lift_to_pd(self._pd.to_csv)
-        return f(*args, **kwargs)
+        return f(path_or_buf=path_or_buf, index=index)
 
     def to_numpy(self):
         '''
         A NumPy ndarray representing the values in this Series or Index.
+
+        :return: Series as a NumPy array.
+        :rtype: NumPy array
         '''
         f = _lift_to_pd(self._pd.to_numpy)
         return f()
@@ -342,6 +700,10 @@ class Series(object):
 
     def __truediv__(self, other):
         f = _lift_to_pd(self._pd.__truediv__)
+        return f(other)
+
+    def __mod__(self, other):
+        f = _lift_to_pd(self._pd.__mod__)
         return f(other)
 
     # comparison
