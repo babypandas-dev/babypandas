@@ -19,7 +19,9 @@ class DataFrame(object):
     '''
 
     def __init__(self, **kwargs):
-        
+        '''
+        Create an empty DataFrame.
+        '''
         # hidden pandas dataframe object
         self._pd = pd.DataFrame(**kwargs)
         
@@ -44,17 +46,22 @@ class DataFrame(object):
 
     # return the underlying DataFrame
     def to_df(self):
-        '''return the full pandas dataframe'''
+        '''Return the full pandas DataFrame.'''
         return self._pd
     
     # Creation
     @classmethod
     def from_dict(cls, data):
+        '''
+        Create a DataFrame from a dictionary.
+        '''
         return cls(data=data)
         
     @classmethod
     def from_records(cls, data, columns):
-        
+        '''
+        Create a DataFrame from a sequence of records.
+        '''
         return cls(data=data, columns=columns)
 
     # Dunder Attributes
@@ -89,7 +96,7 @@ class DataFrame(object):
             raise TypeError('Argument `indices` must be a list-like object')
         if not all(isinstance(x, (int, np.integer)) for x in indices):
             raise ValueError('Argument `indices` must only contain integers')
-        if len(indices) > self._pd.shape[0]:
+        if not all(x < self._pd.shape[0] for x in indices):
             raise IndexError('Indices are out-of-bounds')
 
         f = _lift_to_pd(self._pd.take)
@@ -476,7 +483,8 @@ class DataFrame(object):
 
         :example:
         '''
-        # TODO
+        if not isinstance(other, DataFrame):
+            raise TypeError('Argument `other` must by a DataFrame')
 
         f = _lift_to_pd(self._pd.append)
         return f(other=other)
@@ -524,7 +532,9 @@ class Series(object):
     '''
 
     def __init__(self, **kwargs):
-        
+        '''
+        Create an empty Series.
+        '''
         # hidden pandas dataeriesframe object
         self._pd = pd.Series(**kwargs)
         
@@ -551,7 +561,25 @@ class Series(object):
         :param indices: An array of ints indicating which positions to take.
         :type indices: list of ints
         :return: Series with the given positional indices.
+
+        :example:
+        >>> s = bpd.Series(data=[1, 2, 3], index=['A', 'B', 'C'])
+        >>> s.take([0, 3])
+        A    1
+        C    3
+        dtype: int64
+        >>> s.take(np.arange(2))
+        A    1
+        B    2
+        dtype: int64
         '''
+        if not isinstance(indices, Iterable):
+            raise TypeError('Argument `indices` must be a list-like object')
+        if not all(isinstance(x, (int, np.integer)) for x in indices):
+            raise ValueError('Argument `indices` must only contain integers')
+        if not all(x < self._pd.shape[0] for x in indices):
+            raise IndexError('Indices are out-of-bounds')
+
         f = _lift_to_pd(self._pd.take)
         return f(indices)
 
@@ -567,7 +595,31 @@ class Series(object):
         :type random_state: int, optional
         :return: Series with *n* randomly sampled items.
         :rtype: Series
+
+        :example:
+        >>> s = bpd.Series(data=[1, 2, 3, 4, 5])
+        >>> s.sample(3, random_state=0)
+        2    3
+        0    1
+        1    2
+        dtype: int64
+        >>> s.sample(7, replace=True, random_state=10)
+        1    2
+        4    5
+        0    1
+        1    2
+        3    4
+        4    5
+        1    2
+        dtype: int64
         '''
+        if not isinstance(n, int) and n != None:
+            raise TypeError('Argument `n` not an integer')
+        if not isinstance(replace, bool):
+            raise TypeError('Argument `replace` not a boolean')
+        if not isinstance(random_state, int) and random_state != None:
+            raise TypeError('Argument `random_state` must be an integer or None')
+
         f = _lift_to_pd(self._pd.sample)
         return f(n=n, replace=replace, random_state=random_state)
 
@@ -580,7 +632,25 @@ class Series(object):
         :type func: function
         :return: Result of applying func to the Series.
         :rtype: Series
+
+        :example:
+        >>> def cut_off_5(val):
+        ...     if val > 5:
+        ...         return 5
+        ...     else:
+        ...         return val
+        >>> s = bpd.Series(data=[1, 3, 5, 7, 9]
+        >>> s.apply(cut_off_5)
+        0    1
+        1    3
+        2    5
+        3    5
+        4    5
+        dtype: int64
         '''
+        if not callable(func):
+            raise TypeError('Argument `func` must be a function')
+
         f = _lift_to_pd(self._pd.apply)
         return f(func=func)
 
@@ -592,7 +662,27 @@ class Series(object):
         :type ascending: bool, default True
         :return: Series with sorted values.
         :rtype: Series
+
+        :example:
+        >>> s = bpd.Series(data=[6, 4, 3, 9, 5])
+        >>> s.sort_values()
+        2    3
+        1    4
+        4    5
+        0    6
+        3    9
+        dtype: int64
+        >>> s.sort_values(ascending=False)
+        3    9
+        0    6
+        4    5
+        1    4
+        2    3
+        dtype: int64
         '''
+        if not isinstance(ascending, bool):
+            raise TypeError('Argument `ascending` must be a boolean')
+
         f = _lift_to_pd(self._pd.sort_values)
         return f(ascending=ascending)
 
@@ -603,6 +693,19 @@ class Series(object):
 
         :return: Summary statistics of the Series provided.
         :rtype: Series
+
+        :example:
+        >>> s = bpd.Series(data=[6, 7, 7, 5, 9, 5, 1])
+        >>> s.describe()
+        count    7.000000
+        mean     5.714286
+        std      2.497618
+        min      1.000000
+        25%      5.000000
+        50%      6.000000
+        75%      7.000000
+        max      9.000000
+        dtype: float64
         '''
         f = _lift_to_pd(self._pd.describe)
         return f()
@@ -615,7 +718,28 @@ class Series(object):
         :type drop: bool, default False
         :return: When drop is False (the default), a DataFrame is returned. The newly created columns will come first in the DataFrame, followed by the original Series values. When drop is True, a Series is returned.
         :rtype: Series or DataFrame
+
+        :example:
+        >>> s = bpd.Series([6, 4, 3, 9, 5])
+        >>> sorted = s.sort_values()
+        >>> sorted.reset_index()
+           index  0
+        0      2  3
+        1      1  4
+        2      4  5
+        3      0  6
+        4      3  9
+        >>> sorted.reset_index(drop=True)
+        0    3
+        1    4
+        2    5
+        3    6
+        4    9
+        dtype: int64
         '''
+        if not isinstance(drop, bool):
+            raise TypeError('Argument `drop` must be a boolean')
+
         f = _lift_to_pd(self._pd.reset_index)
         return f(drop=drop)
 
@@ -637,8 +761,10 @@ class Series(object):
         :type index: bool, default True
         :return: If path_or_buf is None, returns the resulting csv format as a string. Otherwise returns None.
         :rtype: None or str
-
         '''
+        if not isinstance(index, bool):
+            raise TypeError('Argument `index` must be a boolean')
+
         f = _lift_to_pd(self._pd.to_csv)
         return f(path_or_buf=path_or_buf, index=index)
 
