@@ -3,7 +3,7 @@ DataFrame
 
 .. currentmodule:: bpd
 
-Summary of DataFrame methods for BabyPandas. 
+Summary of ``DataFrame`` methods for ``babyandas``. ``DataFrame`` are a two-dimensional tabular data structure with labeled rows (indices) and columns.
 
 Click a method to see its documentation.
 
