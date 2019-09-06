@@ -78,6 +78,7 @@ class DataFrame(object):
         :type indices: list of ints
         :return: DataFrame with the given positional indices.
         :rtype: DataFrame
+        :raises [TypeError]: if `indices` isn't a list-like object.
 
         :example:
         >>> df = bpd.DataFrame().assign(name=['falcon', 'parrot', 'lion'],
