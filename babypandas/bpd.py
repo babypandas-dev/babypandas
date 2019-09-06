@@ -78,7 +78,7 @@ class DataFrame(object):
         :type indices: list of ints
         :return: DataFrame with the given positional indices.
         :rtype: DataFrame
-        :raises [TypeError]: if `indices` isn't a list-like object.
+        :raises IndexError: if any `indices` are out of bounds with respect to column length.
 
         :example:
         >>> df = bpd.DataFrame().assign(name=['falcon', 'parrot', 'lion'],
@@ -111,6 +111,7 @@ class DataFrame(object):
         :type columns: str label or list of str labels
         :return: DataFrame with the dropped columns.
         :rtype: DataFrame
+        :raises KeyError: if a label isn't found in the DataFrame's columns
 
         :example:
         >>> df = bpd.DataFrame().assign(A=[0, 4, 8],
