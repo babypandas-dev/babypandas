@@ -78,7 +78,7 @@ class DataFrame(object):
         :type indices: list of ints
         :return: DataFrame with the given positional indices.
         :rtype: DataFrame
-        :raises IndexError: if any `indices` are out of bounds with respect to column length.
+        :raises IndexError: if any `indices` are out of bounds with respect to DataFrame length.
 
         :example:
         >>> df = bpd.DataFrame().assign(name=['falcon', 'parrot', 'lion'],
@@ -111,7 +111,7 @@ class DataFrame(object):
         :type columns: str label or list of str labels
         :return: DataFrame with the dropped columns.
         :rtype: DataFrame
-        :raises KeyError: if a label isn't found in the DataFrame's columns
+        :raises KeyError: if `columns` not found in columns
 
         :example:
         >>> df = bpd.DataFrame().assign(A=[0, 4, 8],
@@ -149,8 +149,9 @@ class DataFrame(object):
         :type n: int, optional
         :type replace: bool, default False
         :type random_state: int, optional
-        :return: DataFrame with *n* randomly sampled rows.
+        :return: DataFrame with `n` randomly sampled rows.
         :rtype: DataFrame
+        :raises ValueError: if a sample larger than the length of the DataFrame is taken without replacement.
 
         :example:
         >>> df = bpd.DataFrame().assign(letter=['a', 'b', 'c'],
@@ -166,6 +167,8 @@ class DataFrame(object):
             raise TypeError('Argument `replace` not a boolean')
         if not isinstance(random_state, int) and random_state != None:
             raise TypeError('Argument `random_state` must be an integer or None')
+        if n != None and n > self._pd.shape[0] and replace == False:
+            raise ValueError('Cannot take a larger sample than length of DataFrame when `replace=False`')
 
         f = _lift_to_pd(self._pd.sample)
         return f(n=n, replace=replace, random_state=random_state)
@@ -178,6 +181,7 @@ class DataFrame(object):
         :type key: str label or list of str labels 
         :return: Series with the corresponding label or DataFrame with the corresponding labels
         :rtype: Series or DataFrame
+        :raises KeyError: if `key` not found in columns
 
         :example:
         >>> df = bpd.DataFrame().assign(letter=['a', 'b', 'c'],
@@ -212,6 +216,7 @@ class DataFrame(object):
         :param kwargs: Keyword column names with a list of values.
         :return: DataFrame with the additional column(s).
         :rtype: DataFrame
+        :raises ValueError: if columns have different lengths or if new columns have different lengths than the existing DataFrame
 
         :example:
         >>> df = bpd.DataFrame().assign(flower=['sunflower', 'rose'])
@@ -220,6 +225,12 @@ class DataFrame(object):
         0  sunflower  yellow
         1       rose     red        
         '''
+        if len(set(map(len, kwargs.values()))) not in (0, 1):
+            raise ValueError('Not all columns have the same length')
+        if self._pd.shape[1] != 0:
+            if len(list(kwargs.values())[0]) != self._pd.shape[0]:
+                raise ValueError('New column does not have the same length as existing DataFrame')
+
         f = _lift_to_pd(self._pd.assign)
         return f(**kwargs)
 
@@ -267,6 +278,7 @@ class DataFrame(object):
         :type param: bool, default True
         :return: DataFrame with sorted values.
         :rtype: DataFrame
+        :raises KeyError: if `by` not found in columns
 
         :example:
         >>> df = bpd.DataFrame().assign(name=['Sally', 'George', 'Bill', 'Ann'],
@@ -330,6 +342,7 @@ class DataFrame(object):
         :type by: label, or list of labels
         :return: Groupby object that contains information about the groups.
         :rtype: DataFrameGroupBy
+        :raises KeyError: if `by` not found in columns
 
         :example:
         >>> df =bpd.DataFrame(animal=['Falcon', 'Falcon', 'Parrot', 'Parrot'],
@@ -396,6 +409,7 @@ class DataFrame(object):
         :type drop: bool, default True
         :return: DataFrame with changed row labels.
         :rtype: DataFrame
+        :raises KeyError: if `keys` not found in columns
 
         :example:
         >>> df = bpd.DataFrame().assign(name=['Sally', 'George', 'Bill', 'Ann'],
@@ -444,6 +458,7 @@ class DataFrame(object):
         :type right_on: label or list of labels
         :return: A DataFrame of the two merged objects.
         :rtype: DataFrame
+        :raises KeyError: if any input labels are not found in the corresponding DataFrame's columns
 
         :example:
         >>> df1 = bpd.DataFrame().assign(pet=['dog', 'cat', 'lizard', 'turtle'],
@@ -563,6 +578,7 @@ class Series(object):
         :param indices: An array of ints indicating which positions to take.
         :type indices: list of ints
         :return: Series with the given positional indices.
+        :raises IndexError: if any `indices` are out of bounds with respect to DataFrame length.
 
         :example:
         >>> s = bpd.Series(data=[1, 2, 3], index=['A', 'B', 'C'])
@@ -595,8 +611,9 @@ class Series(object):
         :type n: int, optional
         :type replace: bool, default False
         :type random_state: int, optional
-        :return: Series with *n* randomly sampled items.
+        :return: Series with `n` randomly sampled items.
         :rtype: Series
+        :raises ValueError: if a sample larger than the length of the DataFrame is taken without replacement.
 
         :example:
         >>> s = bpd.Series(data=[1, 2, 3, 4, 5])
@@ -621,6 +638,8 @@ class Series(object):
             raise TypeError('Argument `replace` not a boolean')
         if not isinstance(random_state, int) and random_state != None:
             raise TypeError('Argument `random_state` must be an integer or None')
+        if n != None and n > self._pd.shape[0] and replace == False:
+            raise ValueError('Cannot take a larger sample than length of DataFrame when `replace=False`')
 
         f = _lift_to_pd(self._pd.sample)
         return f(n=n, replace=replace, random_state=random_state)
