@@ -12,7 +12,7 @@ setup(
     version = '0.1.0',
     install_requires = install_requires,
     description = 'A restricted Pandas API',
-    author = 'Aaron Fraenkel',
+    author = 'Aaron Fraenkel, Darren Liu',
     author_email = '',
     url = 'https://github.com/afraenkel/babypandas'
 )
