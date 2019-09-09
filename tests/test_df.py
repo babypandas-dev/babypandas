@@ -4,6 +4,7 @@ import re
 import numpy as np
 from numpy.testing import assert_array_equal
 import babypandas.bpd as bpd
+import pandas as pd
 
 def test_df_length():
 	'''For first test'''
@@ -15,256 +16,111 @@ def test_df_length():
 # Utils #
 #########
 
-def df1():
-	'''Simple 3x3 table'''
-	return bpd.DataFrame().assign(letter=['a', 'b', 'c'],
-		 						  count=[9, 3, 3],
-		 						  points=[1, 2, 2])
+df1 = bpd.DataFrame().assign(letter=['a', 'b', 'c'],
+ 						     count=[9, 3, 3],
+ 						     points=[1, 2, 2])
+pdf1 = pd.DataFrame().assign(letter=['a', 'b', 'c'],
+  						     count=[9, 3, 3],
+ 						     points=[1, 2, 2])
 
-def df2():
-	'''Table with only numbers'''
-	return bpd.DataFrame().assign(col1=[5, 2, 7, 5],
-								  col2=[2, 7, 1, 8],
-								  col3=[6, 6, 1, 3],
-								  col4=[5, 5, 5, 9])
+df2 = bpd.DataFrame().assign(col1=[5, 2, 7, 5],
+						     col2=[2, 7, 1, 8],
+			       	 		 col3=[6, 6, 1, 3],
+							 col4=[5, 5, 5, 9])
+pdf2 = pd.DataFrame().assign(col1=[5, 2, 7, 5],
+						     col2=[2, 7, 1, 8],
+			       	 		 col3=[6, 6, 1, 3],
+							 col4=[5, 5, 5, 9])
 
-def df3():
-	'''Animals and kinds'''
-	return bpd.DataFrame().assign(name=['dog', 'cat', 'pidgeon', 'chicken', 'snake'],
-								  kind=['mammal', 'mammal', 'bird', 'bird', 'reptile'])
+df3 = bpd.DataFrame().assign(name=['dog', 'cat', 'pidgeon', 'chicken', 'snake'],
+							 kind=['mammal', 'mammal', 'bird', 'bird', 'reptile'])
+pdf3 = pd.DataFrame().assign(name=['dog', 'cat', 'pidgeon', 'chicken', 'snake'],
+							 kind=['mammal', 'mammal', 'bird', 'bird', 'reptile'])
 
-def df4():
-	'''Kinds'''
-	return bpd.DataFrame().assign(kind=['mammal', 'bird', 'reptile'],
-								  short=['m',  'b', 'r'])
+df4 = bpd.DataFrame().assign(kind=['mammal', 'bird', 'reptile'],
+							 short=['m',  'b', 'r'])
+pdf4 = pd.DataFrame().assign(kind=['mammal', 'bird', 'reptile'],
+							 short=['m',  'b', 'r'])
 
-def assert_equal(string1, string2):
-    string1, string2 = str(string1), str(string2)
-    whitespace = re.compile(r'\s')
-    purify = lambda s: whitespace.sub('', s)
-    assert purify(string1) == purify(string2), "\n%s\n!=\n%s" % (string1, string2)
+def assert_df_equal(df, pdf, method=None, **kwargs):
+	if method:
+		df = getattr(df, method)(**kwargs)
+		pdf = getattr(pdf, method)(**kwargs)
 
-############
-# Doctests #
-############
+	assert (np.all(df.columns == pdf.columns)), 'Columns do not match'
+	assert (np.all(df.index == pdf.index)), 'Indices do not match'
+	assert (np.all(df.values == pdf.values)), 'Values do not match'
 
+def assert_series_equal(ser, pser, method=None, **kwargs):
+	if method:
+		ser = getattr(ser, method)(**kwargs)
+		pser = getattr(pser, method)(**kwargs)
 
-# def test_doctests():
-#     results = doctest.testmod(bpd, optionflags=doctest.NORMALIZE_WHITESPACE)
-#     assert results.failed == 0
+	assert (np.all(ser.index == pser.index)), 'Indices do not match'
+	assert (np.all(ser.values == pser.values)), 'Values do not match'
 
 #########
 # Tests #
 #########
 
 def test_basic():
-	assert_equal(df1(), 
-	'''
-		  letter  count  points
-	0      a      9       1
-	1      b      3       2
-	2      c      3       2
-	''')
-	assert_equal(df2(),
-	'''
-	   col1  col2  col3  col4
-	0     5     2     6     5
-	1     2     7     6     5
-	2     7     1     1     5
-	3     5     8     3     9
-	''')
-	assert_equal(df3(),
-	'''
-	      name     kind
-	0      dog   mammal
-	1      cat   mammal
-	2  pidgeon     bird
-	3  chicken     bird
-	4    snake  reptile
-	''')
-	assert_equal(df4(),
-	'''
-	      kind short
-	0   mammal     m
-	1     bird     b
-	2  reptile     r
-	''')
+	assert_df_equal(df1, pdf1)
+	assert_df_equal(df2, pdf2)
+	assert_df_equal(df3, pdf3)
+	assert_df_equal(df4, pdf4)
 
 def test_iloc():
-	df = df2()
-	assert_array_equal(df.iloc[0].values, np.array([5, 2, 6, 5]))
+	assert_series_equal(df2.iloc[0], pdf2.iloc[0])
 
-def test_take(): 
-	df = df1()
-	assert_equal(df.take([0, 2]), 
-	'''
-		  letter  count  points
-	0      a      9       1
-	2      c      3       2
-	''')
+def test_take():
+	assert_df_equal(df1, pdf1, 'take', indices=[0, 2])
 
 def test_drop():
-	df = df1()
-	assert_equal(df.drop(columns=['count']), 
-	'''
-		  letter  points
-	0      a       1
-	1      b       2
-	2      c       2
-	''')
-	assert_equal(df.drop(columns='count'), 
-	'''
-		  letter  points
-	0      a       1
-	1      b       2
-	2      c       2
-	''')
+	assert_df_equal(df1, pdf1, 'drop', columns=['count'])
 
 def test_sample():
-	df = df1()
-	assert_equal(df.sample(1, random_state=0), 
-	'''
-		letter  count  points
-	2      c      3       2
-	''')
-	assert_equal(df.sample(2, random_state=50),
-	'''
-		letter  count  points
-	1      b      3       2
-	2      c      3       2
-	''')
+	assert_df_equal(df1, pdf1, 'sample', n=1, random_state=0)
+	assert_df_equal(df1, pdf1, 'sample', n=2, random_state=50)
 
 def test_get():
-	df = df1()
-	assert_array_equal(df.get('letter').values, np.array(['a', 'b', 'c']))
-	assert_array_equal(df.get('count').values, np.array([9, 3, 3]))
+	assert_series_equal(df1, pdf1, 'get', key='letter')
+	assert_df_equal(df1, pdf1, 'get', key=['letter', 'points'])
 
 def test_assign():
-	df = df2()
-	assert_equal(df.assign(col5=[1, 1, 1, 1]),
-	'''
-	   col1  col2  col3  col4  col5
-	0     5     2     6     5     1
-	1     2     7     6     5     1
-	2     7     1     1     5     1
-	3     5     8     3     9     1
-	''')
+	assert_df_equal(df2, pdf2, 'assign', col5=[1, 1, 1, 1])
 
 def test_apply():
-	df = df2()
 	f = lambda x: x + 2
-	assert_equal(df.apply(f),
-	'''
-	   col1  col2  col3  col4
-	0     7     4     8     7
-	1     4     9     8     7
-	2     9     3     3     7
-	3     7    10     5    11
-	''')
+	assert_df_equal(df2, pdf2, 'apply', func=f)
 
 def test_sort_values():
-	df = df1()
-	assert_equal(df.sort_values(by='count'),
-	'''
-	  letter  count  points
-	1      b      3       2
-	2      c      3       2
-	0      a      9       1
-	''')
-	df = df2()
-	assert_equal(df.sort_values(by='col2', ascending=False),
-	'''
-	   col1  col2  col3  col4
-	3     5     8     3     9
-	1     2     7     6     5
-	0     5     2     6     5
-	2     7     1     1     5
-	''')
+	assert_df_equal(df1, pdf1, by='count')
+	assert_df_equal(df2, pdf2, by='col2', ascending=False)
 
 def test_describe():
-	df = df2()
-	assert_equal(df.describe(),
-	'''
-	           col1      col2     col3  col4
-	count  4.000000  4.000000  4.00000   4.0
-	mean   4.750000  4.500000  4.00000   6.0
-	std    2.061553  3.511885  2.44949   2.0
-	min    2.000000  1.000000  1.00000   5.0
-	25%    4.250000  1.750000  2.50000   5.0
-	50%    5.000000  4.500000  4.50000   5.0
-	75%    5.500000  7.250000  6.00000   6.0
-	max    7.000000  8.000000  6.00000   9.0
-	''')
+	assert_df_equal(df2, pdf2, 'describe')
 
 def test_groupby():
-	df = df3()
-	gb = df.groupby('kind')
+	gb = df3.groupby('kind')
+	pgb = pdf3.groupby('kind')
 	assert isinstance(gb, bpd.DataFrameGroupBy)
-	assert_equal(gb.count(),
-	'''
-	         name
-	kind
-	bird        2
-	mammal      2
-	reptile     1
-	''')
+	assert_df_equal(gb.sum(), pgb.sum())
 
 def test_reset_index():
-	df = df2().sort_values(by='col2')
-	assert_equal(df.reset_index(),
-	'''
-	   index  col1  col2  col3  col4
-	0      2     7     1     1     5
-	1      0     5     2     6     5
-	2      1     2     7     6     5
-	3      3     5     8     3     9
-	''')
-	assert_equal(df.reset_index(drop=True),
-	'''
-		   col1  col2  col3  col4
-	0     7     1     1     5
-	1     5     2     6     5
-	2     2     7     6     5
-	3     5     8     3     9
-	''')
+	df = df2.sort_values(by='col2')
+	pdf = pdf2.sort_values(by='col2')
+	assert_df_equal(df, pdf, 'reset_index')
+	assert_df_equal(df, pdf, 'reset_index', drop=True)
 
 def test_set_index():
-	df = df2()
-	assert_equal(df.set_index('col1'),
-	'''
-	      col2  col3  col4
-	col1
-	5        2     6     5
-	2        7     6     5
-	7        1     1     5
-	5        8     3     9
-	''')
-	assert_equal(df.set_index('col1', drop=False),
-	'''
-	      col1  col2  col3  col4
-	col1
-	5        5     2     6     5
-	2        2     7     6     5
-	7        7     1     1     5
-	5        5     8     3     9
-	''')
+	assert_df_equal(df2, pdf2, 'set_index', keys='col1')
+	assert_df_equal(df2, pdf2, 'set_index', keys='col1', drop=False)
 
 def test_merge():
-	df_left = df3()
-	df_right = df4()
-	assert_equal(df_left.merge(df_right),
-	'''
-	      name     kind short
-	0      dog   mammal     m
-	1      cat   mammal     m
-	2  pidgeon     bird     b
-	3  chicken     bird     b
-	4    snake  reptile     r
-	''')
+	assert_df_equal(df3.merge(df4), pdf3.merge(pdf4))
 
-# def test_append():
-# 	...
+# # def test_append():
+# # 	...
 
 def test_to_numpy():
-	df = df1()
-	assert isinstance(df.to_numpy(), np.ndarray)
+	assert isinstance(df1.to_numpy(), np.ndarray)

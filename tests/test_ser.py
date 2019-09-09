@@ -10,85 +10,69 @@ import pandas as pd
 # Utils #
 #########
 
-def ser1():
-	'''Ordered numbers'''
-	return bpd.Series(data=[1, 2, 3, 4, 5])
+# Sorted Series
+ser1 = bpd.Series(data=[1, 2, 3, 4, 5])
+pser1 = pd.Series(data=[1, 2, 3, 4, 5])
 
-def ser2():
-	'''Letters'''
-	return bpd.Series(data=['a', 'b', 'c', 'd'])
+# Numbered Series
+ser2 = bpd.Series(data=['a', 'b', 'c', 'd'])
+pser2 = pd.Series(data=['a', 'b', 'c', 'd'])
 
-def ser3():
-	'''Unordered numbers'''
-	return bpd.Series(data=[7, 1, 3, 4, 2])
+# Unsorted Series
+ser3 = bpd.Series(data=[7, 1, 3, 4, 2])
+pser3 = pd.Series(data=[7, 1, 3, 4, 2])
 
-def assert_equal(string1, string2):
-    string1, string2 = str(string1), str(string2)
-    whitespace = re.compile(r'\s')
-    purify = lambda s: whitespace.sub('', s)
-    assert purify(string1) == purify(string2), "\n%s\n!=\n%s" % (string1, string2)
+def assert_df_equal(df, pdf, method=None, **kwargs):
+	if method:
+		df = getattr(df, method)(**kwargs)
+		pdf = getattr(pdf, method)(**kwargs)
 
-############
-# Doctests #
-############
+	assert (np.all(df.columns == pdf.columns)), 'Columns do not match'
+	assert (np.all(df.index == pdf.index)), 'Indices do not match'
+	assert (np.all(df.values == pdf.values)), 'Values do not match'
 
+def assert_series_equal(ser, pser, method=None, **kwargs):
+	if method:
+		ser = getattr(ser, method)(**kwargs)
+		pser = getattr(pser, method)(**kwargs)
 
-# def test_doctests():
-#     results = doctest.testmod(bpd, optionflags=doctest.NORMALIZE_WHITESPACE)
-#     assert results.failed == 0
+	assert (np.all(ser.index == pser.index)), 'Indices do not match'
+	assert (np.all(ser.values == pser.values)), 'Values do not match'
 
 #########
 # Tests #
 #########
 
 def test_basic():
-	assert_array_equal(ser1().values, np.array([1, 2, 3, 4, 5]))
-	assert_array_equal(ser2().values, np.array(['a', 'b', 'c', 'd']))
-	assert_array_equal(ser3().values, np.array([7, 1, 3, 4, 2]))
+	assert_series_equal(ser1, pser1)
+	assert_series_equal(ser2, pser2)
+	assert_series_equal(ser3, pser3)
 
 def test_take():
-	ser = ser1()
-	assert_array_equal(ser.take([0, 2]).values, np.array([1, 3]))
-	ser = ser3()
-	assert_array_equal(ser.take([0, 2]).values, np.array([7, 3]))
+	assert_series_equal(ser1, pser1, 'take', indices=[0, 2])
+	assert_series_equal(ser3, pser3, 'take', indices=[0, 2])
 
 def test_sample():
-	ser = ser1()
-	assert_array_equal(ser.sample(3, random_state=0).values, np.array([3, 1, 2]))
-	assert_array_equal(ser.sample(8, replace=True, random_state=0).values, np.array([5, 1, 4, 4, 4, 2, 4, 3]))
-	ser = ser2()
-	assert_array_equal(ser.sample(random_state=0).values, np.array(['c']))
+	assert_series_equal(ser1, pser1, 'sample', n=3, random_state=0)
+	assert_series_equal(ser1, pser1, 'sample', n=8, replace=True, random_state=0)
+	assert_series_equal(ser2, pser2, 'sample', random_state=0)
 
 def test_apply():
-	ser = ser1()
 	f = lambda x: x + 2
-	assert_array_equal(ser.apply(f).values, np.array([3, 4, 5, 6, 7]))
+	assert_series_equal(ser1, pser1, 'apply', func=f)
 
 def test_sort_values():
-	ser = ser3()
-	assert_array_equal(ser.sort_values().values, np.array([1, 2, 3, 4, 7]))
-	assert_array_equal(ser.sort_values().index, np.array([1, 4, 2, 3, 0]))
-	assert_array_equal(ser.sort_values(ascending=False).values, np.array([7, 4, 3, 2, 1]))
+	assert_series_equal(ser3, pser3, 'sort_values')
+	assert_series_equal(ser3, pser3, 'sort_values', ascending=False)
 
 def test_describe():
-	ser = ser3()
-	arr = pd.Series([7, 1, 3, 4, 2])
-	assert_array_equal(ser.describe().values, np.array([5, arr.mean(), arr.std(), 1, 2, 3, 4, 7]))
+	assert_series_equal(ser3, pser3, 'describe')
 
 def test_reset_index():
-	ser = ser3().sort_values()
-	assert_equal(ser.reset_index(),
-	'''
-	   index  0
-	0      1  1
-	1      4  2
-	2      2  3
-	3      3  4
-	4      0  7
-	''')
-	assert_array_equal(ser.reset_index(drop=True).values, ser.values)
-	assert_array_equal(ser.reset_index(drop=True).index, np.array([0, 1, 2, 3, 4]))
+	ser = ser3.sort_values()
+	pser = pser3.sort_values()
+	assert_df_equal(ser, pser, 'reset_index')
+	assert_series_equal(ser, pser, 'reset_index', drop=True)
 
 def test_to_numpy():
-	ser = ser1()
-	assert isinstance(ser.to_numpy(), np.ndarray)
+	assert isinstance(ser1.to_numpy(), np.ndarray)
