@@ -2,7 +2,6 @@ import pytest
 import doctest
 import re
 import numpy as np
-from numpy.testing import assert_array_equal
 import babypandas.bpd as bpd
 import pandas as pd
 
