@@ -51,18 +51,35 @@ def test_take():
 	assert_series_equal(ser1, pser1, 'take', indices=[0, 2])
 	assert_series_equal(ser3, pser3, 'take', indices=[0, 2])
 
+	# Exceptions
+	assert pytest.raises(TypeError, ser1.take, indices=0)
+	assert pytest.raises(ValueError, ser1.take, indices=['foo'])
+	assert pytest.raises(IndexError, ser1.take, indices=np.arange(6))
+
 def test_sample():
 	assert_series_equal(ser1, pser1, 'sample', n=3, random_state=0)
 	assert_series_equal(ser1, pser1, 'sample', n=8, replace=True, random_state=0)
 	assert_series_equal(ser2, pser2, 'sample', random_state=0)
 
+	# Exceptions
+	assert pytest.raises(TypeError, ser1.sample, n='foo')
+	assert pytest.raises(TypeError, ser1.sample, replace='foo')
+	assert pytest.raises(TypeError, ser1.sample, random_state='foo')
+	assert pytest.raises(ValueError, ser1.sample, n=8)
+
 def test_apply():
 	f = lambda x: x + 2
 	assert_series_equal(ser1, pser1, 'apply', func=f)
 
+	# Exceptions
+	assert pytest.raises(TypeError, ser1.apply, func='foo')
+
 def test_sort_values():
 	assert_series_equal(ser3, pser3, 'sort_values')
 	assert_series_equal(ser3, pser3, 'sort_values', ascending=False)
+
+	# Exceptions
+	assert pytest.raises(TypeError, ser3.sort_values, ascending='foo')
 
 def test_describe():
 	assert_series_equal(ser3, pser3, 'describe')
@@ -72,6 +89,9 @@ def test_reset_index():
 	pser = pser3.sort_values()
 	assert_df_equal(ser, pser, 'reset_index')
 	assert_series_equal(ser, pser, 'reset_index', drop=True)
+
+	# Exceptions
+	assert pytest.raises(TypeError, ser3.reset_index, drop='foo')
 
 def test_to_numpy():
 	assert isinstance(ser1.to_numpy(), np.ndarray)
