@@ -5,41 +5,35 @@ import numpy as np
 import babypandas.bpd as bpd
 import pandas as pd
 
-def test_df_length():
-	'''For first test'''
-	df = bpd.DataFrame().assign(name=['Al', 'Bob', 'Jill', 'Sally'],
-								age=['20', '25', '22', '23'])
-	assert(df.shape[0] == 4), 'Length incorrect'
-
 #########
 # Utils #
 #########
 
-df1 = bpd.DataFrame().assign(letter=['a', 'b', 'c'],
- 						     count=[9, 3, 3],
- 						     points=[1, 2, 2])
-pdf1 = pd.DataFrame().assign(letter=['a', 'b', 'c'],
-  						     count=[9, 3, 3],
- 						     points=[1, 2, 2])
+df1_input = {'data': {'letter': ['a', 'b', 'c'], 'count': [9,3,3]}, 'index': [0,1,2]}
+df2_input = {'data': {'col1': [5, 2, 7, 5], 'col2': [2, 7, 1, 8], 'col3': [6, 6, 1, 3], 'col4': [5, 5, 5, 9]}}
+df3_input = {'data': {'name': ['dog', 'cat', 'pidgeon', 'chicken', 'snake'], 'kind': ['mammal', 'mammal', 'bird', 'bird', 'reptile']}}
+df4_input = {'data': {'kind': ['mammal', 'bird', 'reptile'], 'short': ['m',  'b', 'r']}}
 
-df2 = bpd.DataFrame().assign(col1=[5, 2, 7, 5],
-						     col2=[2, 7, 1, 8],
-			       	 		 col3=[6, 6, 1, 3],
-							 col4=[5, 5, 5, 9])
-pdf2 = pd.DataFrame().assign(col1=[5, 2, 7, 5],
-						     col2=[2, 7, 1, 8],
-			       	 		 col3=[6, 6, 1, 3],
-							 col4=[5, 5, 5, 9])
+@pytest.fixture(scope='function')
+def dfs():
+	df1_input = {'data': {'letter': ['a', 'b', 'c'], 
+						  'count': [9,3,3]}, 
+						  'index': [0,1,2]}
+	df2_input = {'data': {'col1': [5, 2, 7, 5], 
+						  'col2': [2, 7, 1, 8], 
+						  'col3': [6, 6, 1, 3], 
+						  'col4': [5, 5, 5, 9]}}
+	df3_input = {'data': {'name': ['dog', 'cat', 'pidgeon', 'chicken', 'snake'], 
+						  'kind': ['mammal', 'mammal', 'bird', 'bird', 'reptile']}}
+	df4_input = {'data': {'kind': ['mammal', 'bird', 'reptile'], 
+						  'short': ['m',  'b', 'r']}}
 
-df3 = bpd.DataFrame().assign(name=['dog', 'cat', 'pidgeon', 'chicken', 'snake'],
-							 kind=['mammal', 'mammal', 'bird', 'bird', 'reptile'])
-pdf3 = pd.DataFrame().assign(name=['dog', 'cat', 'pidgeon', 'chicken', 'snake'],
-							 kind=['mammal', 'mammal', 'bird', 'bird', 'reptile'])
-
-df4 = bpd.DataFrame().assign(kind=['mammal', 'bird', 'reptile'],
-							 short=['m',  'b', 'r'])
-pdf4 = pd.DataFrame().assign(kind=['mammal', 'bird', 'reptile'],
-							 short=['m',  'b', 'r'])
+	dct = {}
+	dct['df1'] = (bpd.DataFrame(**df1_input), pd.DataFrame(**df1_input))
+	dct['df2'] = (bpd.DataFrame(**df2_input), pd.DataFrame(**df2_input))
+	dct['df3'] = (bpd.DataFrame(**df3_input), pd.DataFrame(**df3_input))
+	dct['df4'] = (bpd.DataFrame(**df4_input), pd.DataFrame(**df4_input))
+	return dct
 
 def assert_df_equal(df, pdf, method=None, **kwargs):
 	if method:
@@ -62,56 +56,68 @@ def assert_series_equal(ser, pser, method=None, **kwargs):
 # Tests #
 #########
 
-def test_basic():
-	assert_df_equal(df1, pdf1)
-	assert_df_equal(df2, pdf2)
-	assert_df_equal(df3, pdf3)
-	assert_df_equal(df4, pdf4)
+def test_basic(dfs):
+	for df, pdf in dfs.values():
+		assert_df_equal(df, pdf)
 
-def test_iloc():
-	assert_series_equal(df2.iloc[0], pdf2.iloc[0])
+def test_iloc(dfs):
+	for df, pdf in dfs.values():
+		assert_series_equal(df.iloc[0], pdf.iloc[0])
 
-def test_take():
-	assert_df_equal(df1, pdf1, 'take', indices=[0, 2])
+def test_take(dfs):
+	for df, pdf in dfs.values():
+		indices = np.random.choice(len(pdf), 2, replace=False)
+		assert_df_equal(df, pdf, 'take', indices=indices)
 
 	# Exceptions
+	df1 = dfs['df1'][0]
 	assert pytest.raises(TypeError, df1.take, indices=1)
 	assert pytest.raises(ValueError, df1.take, indices=['foo'])
 	assert pytest.raises(IndexError, df1.take, indices=np.arange(4))
 
-def test_drop():
-	assert_df_equal(df1, pdf1, 'drop', columns=['count'])
+def test_drop(dfs):
+	for df, pdf in dfs.values():
+		col = pdf.columns.to_series().sample()
+		assert_df_equal(df, pdf, 'drop', columns=col)
 
 	# Exceptions
+	df1 = dfs['df1'][0]
 	assert pytest.raises(TypeError, df1.drop, columns=0)
 	assert pytest.raises(KeyError, df1.drop, columns=['count', 'foo'])
 
-def test_sample():
-	assert_df_equal(df1, pdf1, 'sample', n=1, random_state=0)
-	assert_df_equal(df1, pdf1, 'sample', n=2, random_state=50)
+def test_sample(dfs):
+	for df, pdf in dfs.values():
+		assert_df_equal(df, pdf, 'sample', n=1, random_state=0)
+		assert_df_equal(df, pdf, 'sample', n=2, random_state=50)
 
 	# Exceptions
+	df1 = dfs['df1'][0]
 	assert pytest.raises(TypeError, df1.sample, n='foo')
 	assert pytest.raises(TypeError, df1.sample, replace='foo')
 	assert pytest.raises(TypeError, df1.sample, random_state='foo')
 	assert pytest.raises(ValueError, df1.sample, n=8)
 
-def test_get():
-	assert_series_equal(df1, pdf1, 'get', key='letter')
-	assert_df_equal(df1, pdf1, 'get', key=['letter', 'points'])
+def test_get(dfs):
+	for df, pdf in dfs.values():
+		key = pdf.columns.to_series().sample(2).values
+		assert_series_equal(df, pdf, 'get', key=key[0])
+		assert_df_equal(df, pdf, 'get', key=key)
 
 	# Exceptions
+	df1 = dfs['df1'][0]
 	assert pytest.raises(TypeError, df1.get, key=1)
 	assert pytest.raises(KeyError, df1.get, key='foo')
 
-def test_assign():
+def test_assign(dfs):
+	df2, pdf2 = dfs['df2']
 	assert_df_equal(df2, pdf2, 'assign', col5=[1, 1, 1, 1])
 
 	# Exceptions
 	assert pytest.raises(ValueError, df2.assign, col5=[1, 1, 1, 1], col6=[2, 2])
 	assert pytest.raises(ValueError, df2.assign, col5=[1, 1])
 
-def test_apply():
+def test_apply(dfs):
+	df2, pdf2 = dfs['df2']
 	f = lambda x: x + 2
 	assert_df_equal(df2, pdf2, 'apply', func=f)
 
@@ -119,19 +125,24 @@ def test_apply():
 	assert pytest.raises(TypeError, df2.apply, func=2)
 	assert pytest.raises(ValueError, df2.apply, func=f, axis=3)
 
-def test_sort_values():
-	assert_df_equal(df1, pdf1, by='count')
-	assert_df_equal(df2, pdf2, by='col2', ascending=False)
+def test_sort_values(dfs):
+	for df, pdf in dfs.values():
+		by = pdf.columns.to_series().sample().iloc[0]
+		assert_df_equal(df, pdf, by=by)
+		assert_df_equal(df, pdf, by=by, ascending=False)
 
 	# Exceptions
+	df1 = dfs['df1'][0]
 	assert pytest.raises(TypeError, df1.sort_values, by=0)
 	assert pytest.raises(KeyError, df1.sort_values, by='foo')
 	assert pytest.raises(TypeError, df1.sort_values, by='count', ascending='foo')
 
-def test_describe():
-	assert_df_equal(df2, pdf2, 'describe')
+def test_describe(dfs):
+	for df, pdf in dfs.values():
+		assert_df_equal(df, pdf, 'describe')
 
-def test_groupby():
+def test_groupby(dfs):
+	df3, pdf3 = dfs['df3']
 	gb = df3.groupby('kind')
 	pgb = pdf3.groupby('kind')
 	assert isinstance(gb, bpd.DataFrameGroupBy)
@@ -141,25 +152,33 @@ def test_groupby():
 	assert pytest.raises(TypeError, df3.groupby, by=0)
 	assert pytest.raises(KeyError, df3.groupby, by='foo')
 
-def test_reset_index():
-	df = df2.sort_values(by='col2')
-	pdf = pdf2.sort_values(by='col2')
-	assert_df_equal(df, pdf, 'reset_index')
-	assert_df_equal(df, pdf, 'reset_index', drop=True)
+def test_reset_index(dfs):
+	for df, pdf in dfs.values():
+		by = pdf.columns.to_series().sample().iloc[0]
+		df = df.sort_values(by=by)
+		pdf = pdf.sort_values(by=by)
+		assert_df_equal(df, pdf, 'reset_index')
+		assert_df_equal(df, pdf, 'reset_index', drop=True)
 
 	# Exceptions
+	df2 = dfs['df2'][0]
 	assert pytest.raises(TypeError, df2.reset_index, drop='foo')
 
-def test_set_index():
-	assert_df_equal(df2, pdf2, 'set_index', keys='col1')
-	assert_df_equal(df2, pdf2, 'set_index', keys='col1', drop=False)
+def test_set_index(dfs):
+	for df, pdf in dfs.values():
+		keys = pdf.columns.to_series().sample().iloc[0]
+		assert_df_equal(df, pdf, 'set_index', keys=keys)
+		assert_df_equal(df, pdf, 'set_index', keys=keys, drop=False)
 
 	# Exceptions
+	df2 = dfs['df2'][0]
 	assert pytest.raises(TypeError, df2.set_index, keys=0)
 	assert pytest.raises(KeyError, df2.set_index, keys='foo')
 	assert pytest.raises(TypeError, df2.set_index, keys='col1', drop='foo')
 
-def test_merge():
+def test_merge(dfs):
+	df3, pdf3 = dfs['df3']
+	df4, pdf4 = dfs['df4']
 	assert_df_equal(df3.merge(df4), pdf3.merge(pdf4))
 
 	# Exceptions
@@ -173,5 +192,6 @@ def test_merge():
 # # def test_append():
 # # 	...
 
-def test_to_numpy():
+def test_to_numpy(dfs):
+	df1 = dfs['df1'][0]
 	assert isinstance(df1.to_numpy(), np.ndarray)
