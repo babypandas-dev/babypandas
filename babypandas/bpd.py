@@ -489,7 +489,7 @@ class DataFrame(object):
         f = _lift_to_pd(self._pd.merge)
         return f(right=right, how=how, on=on, left_on=left_on, right_on=right_on)
 
-    def append(self, other):
+    def append(self, other, ignore_index=False):
         '''
         Append rows of other to the end of caller, returning a new object.
 
@@ -502,9 +502,11 @@ class DataFrame(object):
         '''
         if not isinstance(other, DataFrame):
             raise TypeError('Argument `other` must by a DataFrame')
+        if not isinstance(ignore_index, bool):
+            raise TypeError('Argument `ignore_index` must be a boolean')
 
         f = _lift_to_pd(self._pd.append)
-        return f(other=other)
+        return f(other=other, ignore_index=ignore_index)
 
     # Plotting
     def plot(self, *args, **kwargs):

@@ -2,6 +2,7 @@ import pytest
 import doctest
 import re
 import numpy as np
+from numpy.testing import assert_array_equal
 import babypandas.bpd as bpd
 import pandas as pd
 
@@ -9,30 +10,32 @@ import pandas as pd
 # Utils #
 #########
 
-df1_input = {'data': {'letter': ['a', 'b', 'c'], 'count': [9,3,3]}, 'index': [0,1,2]}
-df2_input = {'data': {'col1': [5, 2, 7, 5], 'col2': [2, 7, 1, 8], 'col3': [6, 6, 1, 3], 'col4': [5, 5, 5, 9]}}
-df3_input = {'data': {'name': ['dog', 'cat', 'pidgeon', 'chicken', 'snake'], 'kind': ['mammal', 'mammal', 'bird', 'bird', 'reptile']}}
-df4_input = {'data': {'kind': ['mammal', 'bird', 'reptile'], 'short': ['m',  'b', 'r']}}
-
 @pytest.fixture(scope='function')
 def dfs():
-	df1_input = {'data': {'letter': ['a', 'b', 'c'], 
-						  'count': [9,3,3]}, 
-						  'index': [0,1,2]}
-	df2_input = {'data': {'col1': [5, 2, 7, 5], 
-						  'col2': [2, 7, 1, 8], 
-						  'col3': [6, 6, 1, 3], 
-						  'col4': [5, 5, 5, 9]}}
-	df3_input = {'data': {'name': ['dog', 'cat', 'pidgeon', 'chicken', 'snake'], 
-						  'kind': ['mammal', 'mammal', 'bird', 'bird', 'reptile']}}
-	df4_input = {'data': {'kind': ['mammal', 'bird', 'reptile'], 
-						  'short': ['m',  'b', 'r']}}
+	inputs = []
+	# df1 input: Strings and numbers DataFrame
+	inputs.append({'data': {'letter': ['a', 'b', 'c'], 
+						    'count': [9,3,3], 
+						    'idx': [0,1,2]}})
+	# df2 input: All numbers DataFrame
+	inputs.append({'data': {'col1': [5, 2, 7, 5], 
+						    'col2': [2, 7, 1, 8], 
+						    'col3': [6, 6, 1, 3], 
+						    'col4': [5, 5, 5, 9]}})
+	# df3 input: DataFrame with groups
+	inputs.append({'data': {'name': ['dog', 'cat', 'pidgeon', 'chicken', 'snake'], 
+						    'kind': ['mammal', 'mammal', 'bird', 'bird', 'reptile']}})
+	# df4 input: DataFrame for merge
+	inputs.append({'data': {'kind': ['mammal', 'bird', 'reptile'], 
+						    'short': ['m',  'b', 'r']}})
+	# df5 input: DataFrame for append
+	inputs.append({'data': {'letter': ['d' ,'e'],
+					  	    'count': [4, 1],
+						    'idx': [3, 4]}})
 
 	dct = {}
-	dct['df1'] = (bpd.DataFrame(**df1_input), pd.DataFrame(**df1_input))
-	dct['df2'] = (bpd.DataFrame(**df2_input), pd.DataFrame(**df2_input))
-	dct['df3'] = (bpd.DataFrame(**df3_input), pd.DataFrame(**df3_input))
-	dct['df4'] = (bpd.DataFrame(**df4_input), pd.DataFrame(**df4_input))
+	for key in range(len(inputs)):
+		dct['df{}'.format(key + 1)] = (bpd.DataFrame(**inputs[key]), pd.DataFrame(**inputs[key]))
 	return dct
 
 def assert_df_equal(df, pdf, method=None, **kwargs):
@@ -189,9 +192,17 @@ def test_merge(dfs):
 	assert pytest.raises(KeyError, df3.merge, right=df4, left_on='foo', right_on='kind')
 	assert pytest.raises(KeyError, df3.merge, right=df4, left_on='kind', right_on='foo')
 
-# # def test_append():
-# # 	...
+def test_append(dfs):
+	df1, pdf1 = dfs['df1']
+	df5, pdf5 = dfs['df5']
+	assert_df_equal(df1.append(df5), pdf1.append(pdf5))
+	assert_df_equal(df1.append(df5, ignore_index=True), pdf1.append(pdf5, ignore_index=True))
+	
+	# Exceptions
+	assert pytest.raises(TypeError, df1.append, right=np.array([1, 2, 3]))
+	assert pytest.raises(TypeError, df1.append, right=df5, ignore_index='foo')
 
 def test_to_numpy(dfs):
-	df1 = dfs['df1'][0]
-	assert isinstance(df1.to_numpy(), np.ndarray)
+	for df, pdf in dfs.values():
+		assert isinstance(df.to_numpy(), np.ndarray)
+		assert_array_equal(df.to_numpy(), pdf.to_numpy())

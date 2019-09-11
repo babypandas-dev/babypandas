@@ -2,6 +2,7 @@ import pytest
 import doctest
 import re
 import numpy as np
+from numpy.testing import assert_array_equal
 import babypandas.bpd as bpd
 import pandas as pd
 
@@ -9,17 +10,20 @@ import pandas as pd
 # Utils #
 #########
 
-# Sorted Series
-ser1 = bpd.Series(data=[1, 2, 3, 4, 5])
-pser1 = pd.Series(data=[1, 2, 3, 4, 5])
+@pytest.fixture(scope='function')
+def sers():
+	inputs = []
+	# ser1 input: Sorted Series
+	inputs.append({'data': [1, 2, 3, 4, 5]})
+	# ser2 input: String Series
+	inputs.append({'data': ['a', 'b', 'c', 'd']})
+	# ser3 input: Unsorted Series
+	inputs.append({'data': [7, 1, 3, 4, 2]})
 
-# Numbered Series
-ser2 = bpd.Series(data=['a', 'b', 'c', 'd'])
-pser2 = pd.Series(data=['a', 'b', 'c', 'd'])
-
-# Unsorted Series
-ser3 = bpd.Series(data=[7, 1, 3, 4, 2])
-pser3 = pd.Series(data=[7, 1, 3, 4, 2])
+	dct = {}
+	for key in range(len(inputs)):
+		dct['ser{}'.format(key + 1)] = (bpd.Series(**inputs[key]), pd.Series(**inputs[key]))
+	return dct
 
 def assert_df_equal(df, pdf, method=None, **kwargs):
 	if method:
@@ -42,56 +46,66 @@ def assert_series_equal(ser, pser, method=None, **kwargs):
 # Tests #
 #########
 
-def test_basic():
-	assert_series_equal(ser1, pser1)
-	assert_series_equal(ser2, pser2)
-	assert_series_equal(ser3, pser3)
+def test_basic(sers):
+	for ser, pser in sers.values():
+		assert_series_equal(ser, pser)
 
-def test_take():
-	assert_series_equal(ser1, pser1, 'take', indices=[0, 2])
-	assert_series_equal(ser3, pser3, 'take', indices=[0, 2])
+def test_take(sers):
+	for ser, pser in sers.values():
+		indices = np.random.choice(len(pser), 2, replace=False)
+		assert_series_equal(ser, pser, 'take', indices=indices)
 
 	# Exceptions
+	ser1 = sers['ser1'][0]
 	assert pytest.raises(TypeError, ser1.take, indices=0)
 	assert pytest.raises(ValueError, ser1.take, indices=['foo'])
 	assert pytest.raises(IndexError, ser1.take, indices=np.arange(6))
 
-def test_sample():
-	assert_series_equal(ser1, pser1, 'sample', n=3, random_state=0)
-	assert_series_equal(ser1, pser1, 'sample', n=8, replace=True, random_state=0)
-	assert_series_equal(ser2, pser2, 'sample', random_state=0)
+def test_sample(sers):
+	for ser, pser in sers.values():
+		assert_series_equal(ser, pser, 'sample', n=3, random_state=0)
+		assert_series_equal(ser, pser, 'sample', n=8, replace=True, random_state=0)
 
 	# Exceptions
+	ser1 = sers['ser1'][0]
 	assert pytest.raises(TypeError, ser1.sample, n='foo')
 	assert pytest.raises(TypeError, ser1.sample, replace='foo')
 	assert pytest.raises(TypeError, ser1.sample, random_state='foo')
 	assert pytest.raises(ValueError, ser1.sample, n=8)
 
-def test_apply():
+def test_apply(sers):
+	ser1, pser1 = sers['ser1']
 	f = lambda x: x + 2
 	assert_series_equal(ser1, pser1, 'apply', func=f)
 
 	# Exceptions
 	assert pytest.raises(TypeError, ser1.apply, func='foo')
 
-def test_sort_values():
-	assert_series_equal(ser3, pser3, 'sort_values')
-	assert_series_equal(ser3, pser3, 'sort_values', ascending=False)
+def test_sort_values(sers):
+	for ser, pser in sers.values():
+		assert_series_equal(ser, pser, 'sort_values')
+		assert_series_equal(ser, pser, 'sort_values', ascending=False)
 
 	# Exceptions
+	ser3 = sers['ser3'][0]
 	assert pytest.raises(TypeError, ser3.sort_values, ascending='foo')
 
-def test_describe():
-	assert_series_equal(ser3, pser3, 'describe')
+def test_describe(sers):
+	for ser, pser in sers.values():
+		assert_series_equal(ser, pser, 'describe')
 
-def test_reset_index():
-	ser = ser3.sort_values()
-	pser = pser3.sort_values()
-	assert_df_equal(ser, pser, 'reset_index')
-	assert_series_equal(ser, pser, 'reset_index', drop=True)
+def test_reset_index(sers):
+	for ser, pser in sers.values():
+		ser = ser.sort_values()
+		pser = pser.sort_values()
+		assert_df_equal(ser, pser, 'reset_index')
+		assert_series_equal(ser, pser, 'reset_index', drop=True)
 
 	# Exceptions
+	ser3 = sers['ser3'][0]
 	assert pytest.raises(TypeError, ser3.reset_index, drop='foo')
 
-def test_to_numpy():
-	assert isinstance(ser1.to_numpy(), np.ndarray)
+def test_to_numpy(sers):
+	for ser, pser in sers.values():
+		assert isinstance(ser.to_numpy(), np.ndarray)
+		assert_array_equal(ser.to_numpy(), pser.to_numpy())
