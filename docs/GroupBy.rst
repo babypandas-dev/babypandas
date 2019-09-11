@@ -3,7 +3,7 @@ GroupBy
 
 .. currentmodule:: bpd
 
-Summary of GroupBy methods for BabyPandas. GroupBy objects are returned by groupby calls: :meth:`DataFrame.groupby`
+Summary of ``DataFrameGroupBy`` methods for ``babypandas``. ``DataFrameGroupBy`` objects are returned by ``groupby`` calls: :meth:`DataFrame.groupby`
 
 Click a method to see its documentation.
 

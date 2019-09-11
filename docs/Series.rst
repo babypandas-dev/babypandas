@@ -3,7 +3,7 @@ Series
 
 .. currentmodule:: bpd
 
-Summary of Series methods for BabyPandas. 
+Summary of ``Series`` methods for ``babypandas``. ``Series`` are one-dimensional arrays with labeled indices. 
 
 Click a method to see its documentation.
 
