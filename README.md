@@ -10,11 +10,12 @@ for a smooth transition into `pandas`.
 
 Berkeley `datascience` module equivalents with `pandas`:
 
-| `datascience` function             | `pandas` equivalent or close                             | function description                      |
-|------------------------------------|----------------------------------------------------------|-------------------------------------------|
+| `datascience` function               | `pandas` equivalent or close                               | function description                      |
+|--------------------------------------|------------------------------------------------------------|-------------------------------------------|
 | `Table()`                            | `pd.DataFrame()`                                           | empty table formation                     |
-| `Table().with_columns()`             | `pd.DataFrame().assign()`                                    | table from lists                          |
+| `Table().with_columns()`             | `pd.DataFrame().assign()`                                  | table from lists                          |
 | `table.with_columns()`               | `df.assign()`                                              | adding columns                            |
+| `table.with_rows()`                  | `df.append()`                                              |                                           |
 | `Table.read_table()`                 | `pd.read_csv()`                                            | read in data                              |
 | `table.num_columns`                  | `df.shape[1]`                                              | number of columns                         |
 | `table.num_rows`                     | `df.shape[0]`                                              | number of rows                            |
@@ -46,5 +47,4 @@ Berkeley `datascience` module equivalents with `pandas`:
 ---
 
 ## TODO:
-- Write proper docstrings for each function
 - Clean up methods in table above to match `datascience` documentation and `babypandas` source code
