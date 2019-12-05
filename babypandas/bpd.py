@@ -353,19 +353,30 @@ class DataFrame(object):
         f = _lift_to_pd(self._pd.apply)
         return f(func=func, axis=axis)
 
-    def sort_values(self, by, ascending=True):
+    def sort_values(self, by, *, ascending=True):
         '''
-        Sort by the values along either axis.
+        Sort by the values in column(s) named in `by`.
 
-        :param by: String label or list of string labels to sort by.
-        :param ascending: Sort ascending vs. descending.
-        :type by: str or list of str
-        :type param: bool, default True
-        :return: DataFrame with sorted values.
-        :rtype: DataFrame
-        :raises KeyError: if `by` not found in columns
+        Parameters
+        ----------
+        by : str or list of str
+            Name or list of column names to sort by.
+        ascending : {True, False} or list of bool, keyword only
+            Sort ascending vs. descending. Specify list for multiple sort
+            orders.  If this is a list of bools, must match the length of the
+            `by`.  Default is True.
 
-        :example:
+        Returns
+        -------
+        sorted_obj : DataFrame
+
+        Raises
+        ------
+        KeyError
+            If `by` not found in columns.
+
+        Examples
+        --------
         >>> df = bpd.DataFrame().assign(name=['Sally', 'George', 'Bill', 'Ann'],
         ...                             age=[21, 25, 18, 28],
         ...                             height_cm=[161, 168, 171, 149])
@@ -396,13 +407,25 @@ class DataFrame(object):
 
     def describe(self):
         '''
-        Generate descriptive statistics that summarize the central 
-        tendency, dispersion and shape of a dataset’s distribution.
+        Generate descriptive statistics
 
-        :return: Summary statistics of the DataFrame provided.
-        :rtype: DataFrame
+        Statistics summarize the central tendency, dispersion and shape of a
+        dataset's distribution, excluding ``NaN`` values.
 
-        :example:
+        Analyzes both numeric and object series, as well
+        as ``DataFrame`` column sets of mixed data types.
+
+        Parameters
+        ----------
+        None
+
+        Returns
+        -------
+        Series or DataFrame
+            Summary statistics of the Dataframe provided.
+
+        Examples
+        --------
         >>> df = bpd.DataFrame().assign(A=[0, 10, 20],
         ...                             B=[1, 2, 3])
         >>> df.describe()
@@ -419,17 +442,33 @@ class DataFrame(object):
         f = _lift_to_pd(self._pd.describe)
         return f()
 
-    def groupby(self, by=None):
+    def groupby(self, by):
         '''
-        Group DataFrame or Series using a mapper or by a Series of columns.
+        Group DataFrame by values in columns specified in `by`.
 
-        :param by: Used to determine the groups for the groupby.
-        :type by: label, or list of labels
-        :return: Groupby object that contains information about the groups.
-        :rtype: DataFrameGroupBy
-        :raises KeyError: if `by` not found in columns
+        A groupby operation involves some combination of splitting the object,
+        applying a function, and combining the results. this can be used to
+        group large amounts of data and compute operations on these groups.
 
-        :example:
+        Parameters
+        ----------
+        by : label, or list of labels
+            Used to determine the groups for the groupby. Should be a label or
+            list of labels that will group by the named columns in ``self``.
+            Notice that a tuple is interpreted a (single) key.
+
+        Returns
+        -------
+        df_gb : DataFrameGroupBy
+            groupby object that contains information about the groups.
+
+        Raises
+        -------
+        KeyError
+            If `by` not found in columns
+
+        Examples
+        --------
         >>> df =bpd.DataFrame(animal=['Falcon', 'Falcon', 'Parrot', 'Parrot'],
         ...                   max_speed=[380, 370, 24, 26])
         >>> df.groupby('animal').mean()
@@ -448,18 +487,29 @@ class DataFrame(object):
         f = _lift_to_pd(self._pd.groupby)
         return f(by=by)
 
-    def reset_index(self, drop=False):
+    def reset_index(self, *, drop=False):
         '''
+        Reset the index.
+
+        Reset the index of the DataFrame, and use the default one instead.
+
+        Parameters
+        ----------
+        drop : bool, default False, keyword only
+            Do not try to insert index into dataframe columns. This resets
+            the index to the default integer index.
+
+        Returns
+        -------
+        DataFrame
+            DataFrame with the new index.
+
         Reset the index of the DataFrame, and use the default one 
         instead. If the DataFrame has a MultiIndex, this method can 
         remove one or more levels.
 
-        :param drop: Does not insert index as a column.
-        :type drop: bool, default False
-        :return: DataFrame with the new index.
-        :rtype: DataFrame
-
-        :example:
+        Example
+        -------
         >>> df = bpd.DataFrame().assign(name=['Sally', 'George', 'Bill', 'Ann'],
         ...                             age=[21, 25, 18, 28],
         ...                             height_cm=[161, 168, 171, 149])
@@ -488,15 +538,32 @@ class DataFrame(object):
         '''
         Set the DataFrame index using existing columns.
 
-        :param keys: Key(s) to set index on.
-        :param drop: Delete column(s) to be used as the new index.
-        :type keys: str label or list of str labels
-        :type drop: bool, default True
-        :return: DataFrame with changed row labels.
-        :rtype: DataFrame
-        :raises KeyError: if `keys` not found in columns
+        Set the DataFrame index (row labels) using one or more existing
+        columns or arrays (of the correct length). The index replaces the
+        existing index.
 
-        :example:
+        Parameters
+        ----------
+        keys : label or array-like or list of labels/arrays
+            This parameter can be either a single column key, a single array of
+            the same length as the calling DataFrame, or a list containing an
+            arbitrary combination of column keys and arrays. Here, "array"
+            encompasses :class:`Series`, :class:`Index` and ``np.ndarray``.
+        drop : bool, default True
+            Delete columns to be used as the new index.
+
+        Returns
+        -------
+        DataFrame
+            Data frame with changed row labels.
+
+        Raises
+        ------
+        KeyError
+            If `keys` not found in columns.
+
+        Examples
+        --------
         >>> df = bpd.DataFrame().assign(name=['Sally', 'George', 'Bill', 'Ann'],
         ...                             age=[21, 25, 18, 28],
         ...                             height_cm=[161, 168, 171, 149])
@@ -525,27 +592,52 @@ class DataFrame(object):
         '''
         Merge DataFrame or named Series objects with a database-style join.
 
-        :param right: Object to merge with
-        :param how: Type of merge to be performed.
+        The join is done on columns or indexes. If joining columns on columns,
+        the DataFrame indexes *will be ignored*. Otherwise if joining indexes
+        on indexes or indexes on a column or columns, the index will be passed
+        on.
 
-            - left: use only keys from left frame, similar to a SQL left outer join; preserve key order.
-            - right: use only keys from right frame, similar to a SQL right outer join; preserve key order.
-            - outer: use union of keys from both frames, similar to a SQL full outer join; sort keys lexicographically.
-            - inner: use intersection of keys from both frames, similar to a SQL inner join; preserve the order of the left keys.
+        Parameters
+        ----------
+        right : DataFrame or named Series
+            Object to merge with.
+        how : {'left', 'right', 'outer', 'inner'}, default 'inner'
+            Type of merge to be performed.
 
-        :param on: Column or index level names to join on. These must be found in both DataFrames.
-        :param left_on: Column or index level names to join on in the left DataFrame.
-        :param right_on: Column or index level names to join on in the right DataFrame.
-        :type right: DataFrame or named Series
-        :type how: {'left', 'right', 'outer', 'inner'}, default 'inner'
-        :type on: label or list of labels
-        :type left_on: label or list of labels
-        :type right_on: label or list of labels
-        :return: A DataFrame of the two merged objects.
-        :rtype: DataFrame
-        :raises KeyError: if any input labels are not found in the corresponding DataFrame's columns
+            \* left: use only keys from left frame, similar to a SQL left outer
+              join; preserve key order.
+            \* right: use only keys from right frame, similar to a SQL right
+              outer join; preserve key order.
+            \* outer: use union of keys from both frames, similar to a SQL full
+              outer join; sort keys lexicographically.
+            \* inner: use intersection of keys from both frames, similar to a
+              SQL inner join; preserve the order of the left keys.
+        on : label or list
+            Column or index level names to join on. These must be found in both
+            DataFrames. If `on` is None and not merging on indexes then this
+            defaults to the intersection of the columns in both DataFrames.
+        left_on : label or list, or array-like
+            Column or index level names to join on in the left DataFrame. Can
+            also be an array or list of arrays of the length of the left
+            DataFrame.  These arrays are treated as if they are columns.
+        right_on : label or list, or array-like
+            Column or index level names to join on in the right DataFrame. Can
+            also be an array or list of arrays of the length of the right
+            DataFrame.  These arrays are treated as if they are columns.
 
-        :example:
+        Returns
+        -------
+        DataFrame
+            A DataFrame of the two merged objects.
+
+        Raises
+        ------
+        KeyError
+            If any input labels are not found in the corresponding DataFrame's
+            columns.
+
+        Examples
+        --------
         >>> df1 = bpd.DataFrame().assign(pet=['dog', 'cat', 'lizard', 'turtle'],
         ...                              kind=['mammal', 'mammal', 'reptile', 'reptile'])
         >>> df2 = bpd.DataFrame().assign(kind=['mammal', 'reptile', 'amphibian'],
@@ -576,14 +668,21 @@ class DataFrame(object):
 
     def append(self, other, ignore_index=False):
         '''
-        Append rows of other to the end of caller, returning a new object.
+        Append rows of `other` to the end of caller, returning a new object.
 
-        :param other: The data to append.
-        :type other: DataFrame or Series/dict-like object, or list of these
-        :return: DataFrame with appended rows.
-        :rtype: DataFrame
+        Columns in `other` that are not in the caller are added as new columns.
 
-        :example:
+        Parameters
+        ----------
+        other : DataFrame or Series/dict-like object, or list of these
+            The data to append.
+        ignore_index : boolean, default False
+            If True, do not use the index labels.
+
+        Returns
+        -------
+        a_df : DataFrame
+            DataFrame with appended rows.
         '''
         if not isinstance(other, DataFrame):
             raise TypeError('Argument `other` must by a DataFrame')
@@ -595,23 +694,36 @@ class DataFrame(object):
 
     # Plotting
     def plot(self, *args, **kwargs):
-        '''
-        Plot the data in the DataFrame.
-        '''
+        """
+        DataFrame plotting accessor and method
+
+        Examples
+        --------
+        >>> df.plot.line()
+        >>> df.plot.scatter('x', 'y')
+        >>> df.plot.hexbin()
+        """
         f = _lift_to_pd(self._pd.plot)
         return f(*args, **kwargs)
 
     # IO
-    def to_csv(self, path_or_buf=None, index=True):
+    def to_csv(self, path_or_buf=None, *, index=True):
         '''
         Write object to a comma-separated values (csv) file.
 
-        :param path_or_buf: File path or object, if None is provided the result is returned as a string.
-        :param index: Write row names (index).
-        :type path_or_buf: str or file handle, default None
-        :type index: bool, default True
-        :return: If path_or_buf is None, returns the resulting csv format as a string. Otherwise returns None.
-        :rtype: None or str
+        Parameters
+        ----------
+        path_or_buf : str or file handle, default None
+            File path or object, if None is provided the result is returned as
+            a string.
+        index : bool, default True
+            Write row names (index).
+
+        Returns
+        -------
+        None or str
+            If path_or_buf is None, returns the resulting csv format as a
+            string. Otherwise returns None.
         '''
         if not isinstance(index, bool):
             raise TypeError('Argument `index` must be a boolean')
@@ -623,8 +735,20 @@ class DataFrame(object):
         '''
         Convert the DataFrame to a NumPy array.
 
-        :return: DataFrame as a NumPy array.
-        :rtype: NumPy array
+        By default, the dtype of the returned array will be the common NumPy
+        dtype of all types in the DataFrame. For example, if the dtypes are
+        ``float16`` and ``float32``, the results dtype will be ``float32``.
+        This may require copying data and coercing values, which may be
+        expensive.
+
+        Parameters
+        ----------
+        None
+
+        Returns
+        -------
+        df_arr : numpy.ndarray
+            DataFrame as a NumPy array.
         '''
         f = _lift_to_pd(self._pd.to_numpy)
         return f()
