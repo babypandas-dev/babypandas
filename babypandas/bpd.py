@@ -1,8 +1,9 @@
-
 from collections.abc import Iterable
 
 import numpy as np
 import pandas as pd
+from pandas.core import common as com
+from pandas.core import indexing
 
 pd.set_option("display.max_rows", 10)
 
@@ -95,6 +96,17 @@ class DataFrame(object):
     def _repr_html_(self):
         f = _lift_to_pd(self._pd._repr_html_)
         return f()
+
+    def __getitem__(self, key):
+        if getattr(key, 'to_ser', None):  # Convert to pd.Series
+            key = key.to_ser()
+        if not com.is_bool_indexer(key):
+            raise IndexError('BabyPandas only accepts Boolean objects '
+                             'when indexing against the data frame; '
+                             'please use .get to get columns, and '
+                             '.loc or .iloc for more complex cases.')
+        f = _lift_to_pd(self._pd._getitem_bool_array)
+        return f(key)
 
     # Selection
     def take(self, indices):
@@ -803,6 +815,17 @@ class Series(object):
 
     def __str__(self):
         return self._pd.__str__()
+
+    def __getitem__(self, key):
+        if getattr(key, 'to_ser', None):  # Convert to pd.Series
+            key = key.to_ser()
+        if not com.is_bool_indexer(key):
+            raise IndexError('BabyPandas only accepts Boolean objects '
+                             'when indexing against the Series; please use '
+                             '.loc or .iloc for more complex cases.')
+        key = indexing.check_bool_indexer(self.index, key)
+        f = _lift_to_pd(self._pd._get_with)
+        return f(key)
 
     # Selection
     def take(self, indices):
