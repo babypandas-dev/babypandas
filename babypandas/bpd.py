@@ -1,14 +1,18 @@
-import pandas as pd
-import numpy as np
+
 from collections.abc import Iterable
 
+import numpy as np
+import pandas as pd
+
 pd.set_option("display.max_rows", 10)
+
 
 class DataFrame(object):
     '''
     Custom DataFrame Class; Pandas DataFrames with methods removed.
 
-    :Example:
+    Examples
+    --------
     >>> df = DataFrame.from_records([[1,2,3],[4,5,6]], columns=['a', 'b', 'c'])
     >>> df.shape
     (2, 3)
@@ -24,7 +28,7 @@ class DataFrame(object):
         '''
         # hidden pandas dataframe object
         self._pd = pd.DataFrame(**kwargs)
-        
+
         # lift loc/iloc back to custom DataFrame objects
         self.loc = DataFrameIndexer(self._pd.loc)
         self.iloc = DataFrameIndexer(self._pd.iloc)
@@ -48,20 +52,43 @@ class DataFrame(object):
     def to_df(self):
         '''Return the full pandas DataFrame.'''
         return self._pd
-    
+
     # Creation
     @classmethod
     def from_dict(cls, data):
-        '''
-        Create a DataFrame from a dictionary.
-        '''
+        """
+        Construct DataFrame from dict of array-like or dicts.
+
+        Parameters
+        ----------
+        data : dict
+            Of the form {field : array-like} or {field : dict}.
+
+        Returns
+        -------
+        DataFrame
+        """
         return cls(data=data)
-        
+
     @classmethod
-    def from_records(cls, data, columns):
-        '''
-        Create a DataFrame from a sequence of records.
-        '''
+    def from_records(cls, data, *, columns=None):
+        """
+        Convert structured or record ndarray to DataFrame.
+
+        Parameters
+        ----------
+        data : ndarray (structured dtype), list of tuples, dict, or DataFrame
+        columns : sequence, default None, keyword-only
+            Column names to use. If the passed data do not have names
+            associated with them, this argument provides names for the
+            columns. Otherwise this argument indicates the order of the columns
+            in the result (any names not found in the data will become all-NA
+            columns)
+
+        Returns
+        -------
+        DataFrame
+        """
         return cls(data=data, columns=columns)
 
     # Dunder Attributes
@@ -71,16 +98,33 @@ class DataFrame(object):
 
     # Selection
     def take(self, indices):
-        '''
+        """
+        Return the elements in the given *positional* indices along an axis.
+
+        This means that we are not indexing according to actual values in the
+        index attribute of the object. We are indexing according to the actual
+        position of the element in the object.
+
+        Parameters
+        ----------
+        indices : array-like
+            An array of ints indicating which positions to take.
+
+        Returns
+        -------
+        taken : DataFrame
+            An DataFrame containing the elements taken from the object.
+
         Return the elements in the given positional indices along an axis.
 
-        :param indices: An array of ints indicating which positions to take.
-        :type indices: list of ints
-        :return: DataFrame with the given positional indices.
-        :rtype: DataFrame
-        :raises IndexError: if any `indices` are out of bounds with respect to DataFrame length.
+        Raises
+        ------
+        IndexError
+            If any `indices` are out of bounds with respect to DataFrame
+            length.
 
-        :example:
+        Examples
+        --------
         >>> df = bpd.DataFrame().assign(name=['falcon', 'parrot', 'lion'],
         ...                             kind=['bird', 'bird', 'mammal'])
         >>> df
@@ -92,7 +136,7 @@ class DataFrame(object):
              name    kind
         0  falcon    bird
         2    lion  mammal
-        '''
+        """
         if not isinstance(indices, Iterable):
             raise TypeError('Argument `indices` must be a list-like object')
         if not all(isinstance(x, (int, np.integer)) for x in indices):
@@ -103,17 +147,27 @@ class DataFrame(object):
         f = _lift_to_pd(self._pd.take)
         return f(indices=indices)
 
-    def drop(self, columns=None):
-        '''
-        Drop specified labels from rows or columns.
+    def drop(self, *, columns=None):
+        """
+        Remove columns by specifying column names.
 
-        :param columns: Column labels to drop.
-        :type columns: str label or list of str labels
-        :return: DataFrame with the dropped columns.
-        :rtype: DataFrame
-        :raises KeyError: if `columns` not found in columns
+        Parameters
+        ----------
+        columns : single label or list-like
+            Column names to drop.
 
-        :example:
+        Returns
+        -------
+        df : DataFrame
+            DataFrame with the dropped columns.
+
+        Raises
+        ------
+        KeyError
+            If none of the column labels are found.
+
+        Examples
+        --------
         >>> df = bpd.DataFrame().assign(A=[0, 4, 8],
         ...                             B=[1, 5, 9],
         ...                             C=[2, 6, 10],
@@ -128,7 +182,7 @@ class DataFrame(object):
         0  0   3
         1  4   7
         2  8  11
-        '''
+        """
         if not isinstance(columns, Iterable):
             raise TypeError('Argument `columns` must be a string label or list of string labels')
         mask = [columns not in self.columns] if isinstance(columns, str) else [x not in self.columns for x in columns]
@@ -139,21 +193,30 @@ class DataFrame(object):
         f = _lift_to_pd(self._pd.drop)
         return f(columns=columns)
 
-    def sample(self, n=None, replace=False, random_state=None):
+    def sample(self, n=None, *, replace=False, random_state=None):
         '''
-        Return a random sample of items from an axis of object.
+        Return a random sample of rows from a data frame.
 
-        :param n: Number of items from axis to return.
-        :param replace: Sample with or without replacement.
-        :param random_state: Seed for the random number generator
-        :type n: int, optional
-        :type replace: bool, default False
-        :type random_state: int, optional
-        :return: DataFrame with `n` randomly sampled rows.
-        :rtype: DataFrame
-        :raises ValueError: if a sample larger than the length of the DataFrame is taken without replacement.
+        You can use `random_state` for reproducibility.
 
-        :example:
+        Parameters
+        ----------
+        n : None or int, optional
+            Number of items from axis to return.  None corresponds to 1.
+        replace : {False, True}, optional, keyword only.
+            Sample with or without replacement.
+        random_state : int or numpy.random.RandomState, optional, keyword only
+            Seed for the random number generator (if int), or numpy RandomState
+            object.
+
+        Raises
+        ------
+        ValueError
+            If a sample larger than the length of the DataFrame is taken
+            without replacement.
+
+        Examples
+        --------
         >>> df = bpd.DataFrame().assign(letter=['a', 'b', 'c'],
         ...                             count=[9, 3, 3],
         ...                             points=[1, 2, 2])
@@ -174,16 +237,26 @@ class DataFrame(object):
         return f(n=n, replace=replace, random_state=random_state)
 
     def get(self, key):
-        '''
-        Get item from object for given key (ex: DataFrame column).
+        ''' Return column or columns from data frame.
 
-        :param key: Column label or list of column labels
-        :type key: str label or list of str labels 
-        :return: Series with the corresponding label or DataFrame with the corresponding labels
-        :rtype: Series or DataFrame
-        :raises KeyError: if `key` not found in columns
+        Parameters
+        ----------
+        key : str or iterable of strings
+            Column label or iterable of column labels
 
-        :example:
+        Returns
+        -------
+        series_or_df : Series or DataFrame
+            Series with the corresponding label or DataFrame with the
+            corresponding column labels.
+
+        Raises
+        ------
+        KeyError
+            If any column named in `key` not found in columns.
+
+        Examples
+        --------
         >>> df = bpd.DataFrame().assign(letter=['a', 'b', 'c'],
         ...                             count=[9, 3, 3],
         ...                             points=[1, 2, 2])
@@ -236,21 +309,32 @@ class DataFrame(object):
 
     # Transformation
     def apply(self, func, axis=0):
-        '''
+        """
         Apply a function along an axis of the DataFrame.
 
-        :param func: Function to apply to each column or row.
-        :param axis: Axis along which the function is applied:
-            
-            - 0 or 'index': apply function to each column.
-            - 1 or 'columns': apply function to each row.
+        Objects passed to the function are Series objects whose index is either
+        the DataFrame's index (``axis=0``) or the DataFrame's columns
+        (``axis=1``). The final return type is inferred from the return type of
+        the applied function.
 
-        :type func: function
-        :type axis: {0 or ‘index’, 1 or ‘columns’}, default 0
-        :return: Result of applying func along the given axis of the DataFrame.
-        :rtype: Series or DataFrame
+        Parameters
+        ----------
+        func : function
+            Function to apply to each column or row.
+        axis : {0 or 'index', 1 or 'columns'}, default 0
+            Axis along which the function is applied:
 
-        :example:
+            * 0 or 'index': apply function to each column.
+            * 1 or 'columns': apply function to each row.
+
+        Returns
+        -------
+        Series or DataFrame
+            Result of applying ``func`` along the given axis of the
+            DataFrame.
+
+        Examples
+        --------
         >>> def add_two(row):
         ...     return row + 2
         >>> df = bpd.DataFrame(A=[1, 1],
@@ -259,11 +343,12 @@ class DataFrame(object):
            A  B
         0  3  4
         1  3  4
-        '''
+        """
         if not callable(func):
             raise TypeError('Argument `func` must be a function')
-        if axis not in [0, 1]:
-            raise ValueError('Argument `axis` must be either 0 or 1')
+        if axis not in [0, 1, 'index', 'columns']:
+            raise ValueError('Argument `axis` must be one of 0, 1 '
+                            '"index" or "columns"')
 
         f = _lift_to_pd(self._pd.apply)
         return f(func=func, axis=axis)
@@ -442,12 +527,12 @@ class DataFrame(object):
 
         :param right: Object to merge with
         :param how: Type of merge to be performed.
-            
+
             - left: use only keys from left frame, similar to a SQL left outer join; preserve key order.
             - right: use only keys from right frame, similar to a SQL right outer join; preserve key order.
             - outer: use union of keys from both frames, similar to a SQL full outer join; sort keys lexicographically.
             - inner: use intersection of keys from both frames, similar to a SQL inner join; preserve the order of the left keys.
-        
+
         :param on: Column or index level names to join on. These must be found in both DataFrames.
         :param left_on: Column or index level names to join on in the left DataFrame.
         :param right_on: Column or index level names to join on in the right DataFrame.
@@ -556,7 +641,7 @@ class Series(object):
         '''
         # hidden pandas dataeriesframe object
         self._pd = pd.Series(**kwargs)
-        
+
         # lift loc/iloc back to custom Series objects
         self.loc = DataFrameIndexer(self._pd.loc)
         self.iloc = DataFrameIndexer(self._pd.iloc)
@@ -606,7 +691,7 @@ class Series(object):
     def sample(self, n=None, replace=False, random_state=None):
         '''
         Return a random sample of items from an axis of object.
-        
+
         :param n: Number of items from axis to return.
         :param replace: Sample with or without replacement.
         :param random_state: Seed for the random number generator
@@ -924,7 +1009,6 @@ class DataFrameGroupBy(object):
     '''
 
     def __init__(self, groupby):
-        
         # hidden pandas dataframe object
         self._pd = groupby
 
@@ -988,16 +1072,17 @@ class DataFrameGroupBy(object):
         '''
         f = _lift_to_pd(self._pd.size)
         return f()
-    
+
 
 class DataFrameIndexer(object):
     '''
     Class for lifting results of loc/iloc back to the
     custom DataFrame class.
     '''
-    def __init__(self, indexer):        
+
+    def __init__(self, indexer):
         self.idx = indexer
-        
+
     def __getitem__(self, item):
 
         # convert to pandas if item is baby-pandas object
