@@ -99,7 +99,7 @@ class DataFrame(object):
     # Selection
     def take(self, indices):
         """
-        Return the elements in the given *positional* indices along an axis.
+        Return the rows in the given *positional* indices.
 
         This means that we are not indexing according to actual values in the
         index attribute of the object. We are indexing according to the actual
@@ -114,8 +114,6 @@ class DataFrame(object):
         -------
         taken : DataFrame
             An DataFrame containing the elements taken from the object.
-
-        Return the elements in the given positional indices along an axis.
 
         Raises
         ------
@@ -202,12 +200,18 @@ class DataFrame(object):
         Parameters
         ----------
         n : None or int, optional
-            Number of items from axis to return.  None corresponds to 1.
+            Number of rows to return.  None corresponds to 1.
         replace : {False, True}, optional, keyword only.
             Sample with or without replacement.
         random_state : int or numpy.random.RandomState, optional, keyword only
             Seed for the random number generator (if int), or numpy RandomState
             object.
+
+        Returns
+        -------
+        s_df : DataFrame
+            A new DataFrame containing `n` items randomly sampled from the
+            caller object.
 
         Raises
         ------
@@ -286,17 +290,37 @@ class DataFrame(object):
         '''
         Assign new columns to a DataFrame.
 
-        :param kwargs: Keyword column names with a list of values.
-        :return: DataFrame with the additional column(s).
-        :rtype: DataFrame
-        :raises ValueError: if columns have different lengths or if new columns have different lengths than the existing DataFrame
+        Returns a new object with all original columns in addition to new ones.
+        Existing columns that are re-assigned will be overwritten.
 
-        :example:
+        Parameters
+        ----------
+        **kwargs : dict of {str: callable or Series}
+            The column names are keywords. If the values are
+            callable, they are computed on the DataFrame and
+            assigned to the new columns. The callable must not
+            change input DataFrame (though pandas doesn't check it).
+            If the values are not callable, (e.g. a Series, scalar, or array),
+            they are simply assigned.
+
+        Returns
+        -------
+        df_with_cols : DataFrame
+            A new DataFrame with the new columns in addition to all the
+            existing columns.
+
+        Raises
+        ------
+        ValueError
+            If columns have different lengths or if new columns have different lengths than the existing DataFrame
+
+        Examples
+        --------
         >>> df = bpd.DataFrame().assign(flower=['sunflower', 'rose'])
         >>> df.assign(color=['yellow', 'red'])
               flower   color
         0  sunflower  yellow
-        1       rose     red        
+        1       rose     red
         '''
         if len(set(map(len, kwargs.values()))) not in (0, 1):
             raise ValueError('Not all columns have the same length')
@@ -329,9 +353,8 @@ class DataFrame(object):
 
         Returns
         -------
-        Series or DataFrame
-            Result of applying ``func`` along the given axis of the
-            DataFrame.
+        applied : Series or DataFrame
+            Result of applying ``func`` along the given axis of the DataFrame.
 
         Examples
         --------
@@ -407,7 +430,7 @@ class DataFrame(object):
 
     def describe(self):
         '''
-        Generate descriptive statistics
+        Generate descriptive statistics.
 
         Statistics summarize the central tendency, dispersion and shape of a
         dataset's distribution, excluding ``NaN`` values.
@@ -421,7 +444,7 @@ class DataFrame(object):
 
         Returns
         -------
-        Series or DataFrame
+        descr : DataFrame
             Summary statistics of the Dataframe provided.
 
         Examples
@@ -508,8 +531,8 @@ class DataFrame(object):
         instead. If the DataFrame has a MultiIndex, this method can 
         remove one or more levels.
 
-        Example
-        -------
+        Examples
+        --------
         >>> df = bpd.DataFrame().assign(name=['Sally', 'George', 'Bill', 'Ann'],
         ...                             age=[21, 25, 18, 28],
         ...                             height_cm=[161, 168, 171, 149])
@@ -784,14 +807,30 @@ class Series(object):
     # Selection
     def take(self, indices):
         '''
-        Return the elements in the given positional indices along an axis.
+        Return the elements in the given *positional* indices.
 
-        :param indices: An array of ints indicating which positions to take.
-        :type indices: list of ints
-        :return: Series with the given positional indices.
-        :raises IndexError: if any `indices` are out of bounds with respect to DataFrame length.
+        This means that we are not indexing according to actual values in the
+        index attribute of the object. We are indexing according to the actual
+        position of the element in the object.
 
-        :example:
+        Parameters
+        ----------
+        indices : array-like
+            An array of ints indicating which positions to take.
+
+        Returns
+        -------
+        taken : Series
+            A Series containing the elements taken from the object.
+
+        Raises
+        ------
+        IndexError
+            If any `indices` are out of bounds with respect to Series
+            length.
+
+        Examples
+        --------
         >>> s = bpd.Series(data=[1, 2, 3], index=['A', 'B', 'C'])
         >>> s.take([0, 3])
         A    1
@@ -814,19 +853,34 @@ class Series(object):
 
     def sample(self, n=None, replace=False, random_state=None):
         '''
-        Return a random sample of items from an axis of object.
+        Return a random sample of elements from a Series.
 
-        :param n: Number of items from axis to return.
-        :param replace: Sample with or without replacement.
-        :param random_state: Seed for the random number generator
-        :type n: int, optional
-        :type replace: bool, default False
-        :type random_state: int, optional
-        :return: Series with `n` randomly sampled items.
-        :rtype: Series
-        :raises ValueError: if a sample larger than the length of the DataFrame is taken without replacement.
+        You can use `random_state` for reproducibility.
 
-        :example:
+        Parameters
+        ----------
+        n : None or int, optional
+            Number of elements to return.  None corresponds to 1.
+        replace : {False, True}, optional, keyword only.
+            Sample with or without replacement.
+        random_state : int or numpy.random.RandomState, optional, keyword only
+            Seed for the random number generator (if int), or numpy RandomState
+            object.
+
+        Returns
+        -------
+        s_series : Series
+            A new Series containing `n` items randomly sampled from the caller
+            object.
+
+        Raises
+        ------
+        ValueError
+            If a sample larger than the length of the Series is taken
+            without replacement.
+
+        Examples
+        --------
         >>> s = bpd.Series(data=[1, 2, 3, 4, 5])
         >>> s.sample(3, random_state=0)
         2    3
@@ -860,12 +914,21 @@ class Series(object):
         '''
         Invoke function on values of Series.
 
-        :param func: Function to apply.
-        :type func: function
-        :return: Result of applying func to the Series.
-        :rtype: Series
+        Can be ufunc (a NumPy function that applies to the entire Series)
+        or a Python function that only works on single values.
 
-        :example:
+        Parameters
+        ----------
+        func : function
+            Python function or NumPy ufunc to apply.
+
+        Returns
+        -------
+        a_obj : Series or DataFrame
+            If func returns a Series object the result will be a DataFrame.
+
+        Examples
+        --------
         >>> def cut_off_5(val):
         ...     if val > 5:
         ...         return 5
@@ -886,16 +949,24 @@ class Series(object):
         f = _lift_to_pd(self._pd.apply)
         return f(func=func)
 
-    def sort_values(self, ascending=True):
+    def sort_values(self, *, ascending=True):
         '''
-        Sort by the values
+        Sort by the values.
 
-        :param ascending: Sort ascending vs. descending.
-        :type ascending: bool, default True
-        :return: Series with sorted values.
-        :rtype: Series
+        Sort a Series in ascending or descending order.
 
-        :example:
+        Parameters
+        ----------
+        ascending : bool, default True, keyword only
+            If True, sort values in ascending order, otherwise descending.
+
+        Returns
+        -------
+        s_series : Series
+            Series ordered by values.
+
+        Example
+        -------
         >>> s = bpd.Series(data=[6, 4, 3, 9, 5])
         >>> s.sort_values()
         2    3
@@ -920,13 +991,24 @@ class Series(object):
 
     def describe(self):
         '''
-        Generate descriptive statistics that summarize the central tendency, 
-        dispersion and shape of a dataset’s distribution.
+        Generate descriptive statistics.
 
-        :return: Summary statistics of the Series provided.
-        :rtype: Series
+        Statistics summarize the central tendency, dispersion and shape of a
+        Series' distribution, excluding ``NaN`` values.
 
-        :example:
+        Analyzes both numeric and object series.
+
+        Parameters
+        ----------
+        None
+
+        Returns
+        -------
+        descr : Series
+            Summary statistics of the Series provided.
+
+        Examples
+        --------
         >>> s = bpd.Series(data=[6, 7, 7, 5, 9, 5, 1])
         >>> s.describe()
         count    7.000000
@@ -942,16 +1024,30 @@ class Series(object):
         f = _lift_to_pd(self._pd.describe)
         return f()
 
-    def reset_index(self, drop=False):
+    def reset_index(self, *, drop=False):
         '''
-        Generate a new DataFrame or Series with the index reset.
+        Reset the index.
 
-        :param drop: Does not insert index as a column.
-        :type drop: bool, default False
-        :return: When drop is False (the default), a DataFrame is returned. The newly created columns will come first in the DataFrame, followed by the original Series values. When drop is True, a Series is returned.
-        :rtype: Series or DataFrame
+        This is useful when the index is meaningless and needs to be reset to
+        the default before another operation.
 
-        :example:
+        Parameters
+        ----------
+        drop : bool, default False, keyword only
+            When True, do not try to insert index into dataframe columns. This
+            resets the index to the default integer index.  If False, then turn
+            input Series into DataFrame, adding original index as column.
+
+        Returns
+        -------
+        Series or DataFrame
+            When `drop` is False (the default), a DataFrame is returned.
+            The newly created columns will come first in the DataFrame,
+            followed by the original Series values.
+            When `drop` is True, a `Series` is returned.
+
+        Examples
+        --------
         >>> s = bpd.Series([6, 4, 3, 9, 5])
         >>> sorted = s.sort_values()
         >>> sorted.reset_index()
@@ -978,7 +1074,13 @@ class Series(object):
     # Plotting
     def plot(self, *args, **kwargs):
         '''
-        Plot the data in the DataFrame.
+        Series plotting accessor and method.
+
+        Examples
+        --------
+        >>> s.plot.line()
+        >>> s.plot.bar()
+        >>> s.plot.hist()
         '''
         f = _lift_to_pd(self._pd.plot)
         return f(*args, **kwargs)
@@ -987,12 +1089,20 @@ class Series(object):
     def to_csv(self, path_or_buf=None, index=True):
         '''
         Write object to a comma-separated values (csv) file.
-        :param path_or_buf: File path or object, if None is provided the result is returned as a string.
-        :param index: Write row names (index).
-        :type path_or_buf: str or file handle, default None
-        :type index: bool, default True
-        :return: If path_or_buf is None, returns the resulting csv format as a string. Otherwise returns None.
-        :rtype: None or str
+
+        Parameters
+        ----------
+        path_or_buf : str or file handle, default None
+            File path or object, if None is provided the result is returned as
+            a string.
+        index : bool, default True
+            Write row names (index).
+
+        Returns
+        -------
+        None or str
+            If path_or_buf is None, returns the resulting csv format as a
+            string. Otherwise returns None.
         '''
         if not isinstance(index, bool):
             raise TypeError('Argument `index` must be a boolean')
@@ -1004,8 +1114,13 @@ class Series(object):
         '''
         A NumPy ndarray representing the values in this Series or Index.
 
-        :return: Series as a NumPy array.
-        :rtype: NumPy array
+        Parameters
+        ----------
+        None
+
+        Returns
+        -------
+        arr : numpy.ndarray
         '''
         f = _lift_to_pd(self._pd.to_numpy)
         return f()
@@ -1013,7 +1128,7 @@ class Series(object):
     # Calculations
     def count(self):
         '''
-        Return number of observations in the Series
+        Return number of non-NA/null observations in the Series.
         '''
         f = _lift_to_pd(self._pd.count)
         return f()
@@ -1034,21 +1149,21 @@ class Series(object):
 
     def min(self):
         '''
-        Return the minimum of the values for the requested axis.
+        Return the minimum of the values in the Series.
         '''
         f = _lift_to_pd(self._pd.min)
         return f()
 
     def max(self):
         '''
-        Return the maximum of the values for the requested axis.
+        Return the maximum of the values in the Series.
         '''
         f = _lift_to_pd(self._pd.max)
         return f()
 
     def sum(self):
         '''
-        Return the sum of the values for the requested axis.
+        Return the sum of the values in the Series.
         '''
         f = _lift_to_pd(self._pd.sum)
         return f()
@@ -1124,7 +1239,7 @@ class Series(object):
 
     # return the underlying Series
     def to_ser(self):
-        '''return the full pandas series'''
+        '''Return the underlying Pandas series'''
         return self._pd
 
 
@@ -1138,7 +1253,7 @@ class DataFrameGroupBy(object):
 
     # return the underlying groupby object
     def to_gb(self):
-        '''return the full pandas dataframe'''
+        '''return the underlying pandas groupby object'''
         return self._pd
 
     def aggregate(self, func):
@@ -1200,8 +1315,7 @@ class DataFrameGroupBy(object):
 
 class DataFrameIndexer(object):
     '''
-    Class for lifting results of loc/iloc back to the
-    custom DataFrame class.
+    Class lifts results of loc/iloc back to the custom DataFrame class.
     '''
 
     def __init__(self, indexer):
@@ -1227,7 +1341,7 @@ class DataFrameIndexer(object):
 
 
 def _lift_to_pd(func):
-    '''checks output-type of function and if output is a
+    '''Checks output-type of function and if output is a
     Pandas object, lifts the output to a babypandas class'''
 
     if not callable(func):
@@ -1259,3 +1373,5 @@ def read_csv(filepath, **kwargs):
     '''read_csv'''
     df = pd.read_csv(filepath, **kwargs)
     return DataFrame(data=df)
+
+read_csv.__doc__ = pd.read_csv.__doc__
