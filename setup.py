@@ -11,7 +11,7 @@ with open('README.md') as fh:
 setup(
     name = 'babypandas',
     packages = ['babypandas'],
-    version = '0.1.1',
+    version = '0.1.3',
     install_requires = install_requires,
     description = 'A restricted Pandas API',
     long_description = long_description,
