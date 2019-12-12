@@ -2,6 +2,9 @@
 
 A `pandas` data-analysis library with a restricted API
 
+[![Build Status](https://travis-ci.com/afraenkel/babypandas.svg?branch=master)](https://travis-ci.com/afraenkel/babypandas)
+[![Documentation Status](https://readthedocs.org/projects/babypandas/badge/?version=latest)](https://babypandas.readthedocs.io/en/latest/?badge=latest)
+
 ---
 
 The `pandas` library is a confusing mess of methods, and for every
