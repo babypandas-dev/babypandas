@@ -206,3 +206,29 @@ def test_to_numpy(dfs):
     for df, pdf in dfs.values():
         assert isinstance(df.to_numpy(), np.ndarray)
         assert_array_equal(df.to_numpy(), pdf.to_numpy())
+
+
+def test_indexing(dfs):
+    # Check that boolean indexing works as expected.
+    bp_df, df = dfs['df2']
+    n, p = bp_df.shape
+    col1_is_5 = bp_df.get('col1') == 5
+    col4_is_5 = bp_df.get('col4') == 5
+    # Simple indexing cases, Series, and array.
+    for indexer in (col1_is_5, col4_is_5):
+        for this_ind in (indexer, np.array(indexer)):
+            indexed = bp_df[this_ind]
+            assert indexed.shape[0] == np.count_nonzero(this_ind)
+            assert list(indexed.index) == list(np.arange(n)[this_ind])
+    # Sort Series index, and get the same output (because it depends on the
+    # index).
+    sorted_indexer = col1_is_5.sort_values()
+    with pytest.warns(UserWarning):  # Reindex generates warning.
+        indexed = bp_df[sorted_indexer]
+    assert indexed.shape[0] == 2
+    assert list(indexed.index) == [0, 3]
+    # Any other type of indexing generates an error
+    for indexer in ('col2', ['col1', 'col2'], 2, slice(1, 3),
+                   (col1_is_5, 'col1')):
+        with pytest.raises(IndexError):
+            bp_df[indexer]

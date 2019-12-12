@@ -109,3 +109,26 @@ def test_to_numpy(sers):
     for ser, pser in sers.values():
         assert isinstance(ser.to_numpy(), np.ndarray)
         assert_array_equal(ser.to_numpy(), pser.to_numpy())
+
+
+
+def test_indexing():
+    # Check that boolean indexing works as expected.
+    s = bpd.Series(data=[1, 5, 3, 5, 6])
+    n = len(s)
+    s_is_5 = s == 5
+    # Simple indexing cases, Series, and array.
+    for this_ind in (s_is_5, np.array(s_is_5)):
+        indexed = s[this_ind]
+        assert len(indexed) == np.count_nonzero(this_ind)
+        assert list(indexed.index) == list(np.arange(n)[this_ind])
+    # Sort Series index, and get the same output (because it depends on the
+    # index).
+    sorted_indexer = s_is_5.sort_values()
+    indexed = s[sorted_indexer]
+    assert len(indexed) == 2
+    assert list(indexed.index) == [1, 3]
+    # Any other type of indexing generates an error
+    for indexer in (2, slice(1, 3)):
+        with pytest.raises(IndexError):
+            s[indexer]
