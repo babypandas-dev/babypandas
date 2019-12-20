@@ -73,6 +73,11 @@ def test_sample(sers):
     assert pytest.raises(TypeError, ser1.sample, random_state='foo')
     assert pytest.raises(ValueError, ser1.sample, n=8)
 
+def test_get(sers):
+    
+    ser1 = bpd.Series(data=[1, 2, 3, 4])
+    assert ser1.get(key=2) == 3
+
 def test_apply(sers):
     ser1, pser1 = sers['ser1']
     f = lambda x: x + 2
