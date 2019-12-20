@@ -1095,6 +1095,50 @@ class Series(object):
         f = _lift_to_pd(self._pd.reset_index)
         return f(drop=drop)
 
+    def where(self, cond, other):
+        '''
+        Replace values where the condition is False.
+
+        Parameters
+        ----------
+        cond : boolean Series, array-like, or callable
+            Where cond is True, keep the original value. Where False, replace
+            with corresponding value from other. If cond is callable, it is
+            computed on the Series and should return boolean Series or array.
+        other : scalar, Series/DataFrame, or callable
+            Entries where cond is False are replaced with corresponding value
+            from other. If other is callable, it is computed on the Series
+            and should return scalar or Series.
+
+        Returns
+        -------
+        s_series : Series
+            A new Series with the values replaced when the condition is False.
+
+        Notes
+        -----
+        The `where` method is an application of the if-then idiom. For each
+        element in the calling Series, if ``cond`` is ``True`` the
+        element is used; otherwise the corresponding element from the Series
+        ``other`` is used.
+        The signature for :func:`Series.where` differs from
+        :func:`numpy.where`. Roughly ``ser1.where(m, ser2)`` is equivalent to
+        ``np.where(m, ser1, ser2)``.
+        Examples
+        --------
+        >>> s = pd.Series(range(5))
+        >>> s.where(s > 1, 10)
+        0    10
+        1    10
+        2    2
+        3    3
+        4    4
+        dtype: int64
+        '''
+
+        f = _lift_to_pd(self._pd.where)
+        return f(cond, other)
+
     # Plotting
     def plot(self, *args, **kwargs):
         '''
