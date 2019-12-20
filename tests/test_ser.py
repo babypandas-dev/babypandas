@@ -111,6 +111,27 @@ def test_to_numpy(sers):
         assert_array_equal(ser.to_numpy(), pser.to_numpy())
 
 
+def test_where():
+
+    # replace with an array
+    s = bpd.Series(data=[1, 5, 3, 5, 6])
+    t = bpd.Series(data=[0, 5, 2, 5, 4])
+    cond = s == 5
+    other = np.array([0, 1, 2, 3, 4])
+    assert_series_equal(s, t, method='where', cond=cond, other=other)
+
+    # replace with a broadcasted float
+    s = bpd.Series(data=[1, 5, 3, 5, 6])
+    t = bpd.Series(data=[10, 5, 10, 5, 6])
+    cond = s >= 5
+    other = 10
+    assert_series_equal(s, t, method='where', cond=cond, other=other)
+
+    # throw an error if other is not supplied
+    s = bpd.Series(data=[1, 5, 3, 5, 6])
+    cond = s == 5
+    assert pytest.raises(TypeError, s.where, cond=cond)
+    
 
 def test_indexing():
     # Check that boolean indexing works as expected.
