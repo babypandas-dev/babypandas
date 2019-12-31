@@ -933,6 +933,21 @@ class Series(object):
         f = _lift_to_pd(self._pd.sample)
         return f(n=n, replace=replace, random_state=random_state)
 
+    def get(self, key, default=None):
+        """
+        Get item from object for given key (ex: Series entry).
+        Returns default value if not found.
+        Parameters
+        ----------
+        key : object
+        Returns
+        -------
+        value : same type as items contained in object
+        """
+        
+        f = _lift_to_pd(self._pd.get)
+        return f(key, default=default)
+
     # Transformation
     def apply(self, func):
         '''
