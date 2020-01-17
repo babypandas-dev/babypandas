@@ -158,3 +158,51 @@ def test_indexing():
     for indexer in (2, slice(1, 3)):
         with pytest.raises(IndexError):
             s[indexer]
+
+
+def test_bitwise_and():
+    # check that bitwise and between two Series works
+
+    # given
+    s = bpd.Series(data=[1,2,3,4])
+
+    # when
+    result = ((s >= 2) & (s <= 3))
+
+    # then
+    assert not result.iloc[0]
+    assert result.iloc[1]
+    assert result.iloc[2]
+    assert not result.iloc[3]
+
+
+def test_bitwise_or():
+    # check that bitwise or between two Series works
+
+    # given
+    s = bpd.Series(data=[1,2,3,4])
+
+    # when
+    result = ((s > 2) | (s < 2))
+
+    # then
+    assert result.iloc[0]
+    assert not result.iloc[1]
+    assert result.iloc[2]
+    assert result.iloc[3]
+
+
+def test_bitwise_xor():
+    # check that bitwise or between two Series works
+
+    # given
+    s = bpd.Series(data=[1,2,3,4])
+
+    # when
+    result = ((s >= 2) ^ (s <= 2))
+
+    # then
+    assert result.iloc[0]
+    assert not result.iloc[1]
+    assert result.iloc[2]
+    assert result.iloc[3]
