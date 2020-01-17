@@ -822,6 +822,16 @@ class Series(object):
         self.index = _lift_to_pd(self._pd.index)
         self.values = _lift_to_pd(self._pd.values)
 
+    @property
+    def str(self):
+        '''
+        String methods on Series.
+        '''
+        # accessing the `.str` attribute of a pd.Series will raise an 
+        # AttributeError if the series does not consist of string values. We
+        # use a property here to replicate this behavior.
+        return SeriesStringMethods(self._pd.str)
+
     # Formatting
     def __repr__(self):
         return self._pd.__repr__()

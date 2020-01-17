@@ -160,6 +160,23 @@ def test_indexing():
             s[indexer]
 
 
+def test_str():
+    # check that we can use Series.str methods
+
+    # given
+    s = bpd.Series(data=['this', 'is', 'a', 'test'])
+
+    # when
+    result = s.str.upper()
+
+    # then
+    assert isinstance(result, bpd.Series)
+    assert result.iloc[0] == 'THIS'
+    assert result.iloc[1] == 'IS'
+    assert result.iloc[2] == 'A'
+    assert result.iloc[3] == 'TEST'
+
+
 def test_bitwise_and():
     # check that bitwise and between two Series works
 
