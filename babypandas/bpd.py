@@ -790,6 +790,18 @@ class DataFrame(object):
         return f()
 
 
+class SeriesStringMethods(object):
+    '''
+    String methods on Series objects. Will return bpd.Series
+    '''
+
+    def __init__(self, methods):
+        self._methods = methods
+
+    def __getattr__(self, name):
+        return _lift_to_pd(getattr(self._methods, name))
+
+
 class Series(object):
     '''
     Custom Series class; Pandas Series with methods removed.
@@ -809,6 +821,16 @@ class Series(object):
         self.shape = _lift_to_pd(self._pd.shape)
         self.index = _lift_to_pd(self._pd.index)
         self.values = _lift_to_pd(self._pd.values)
+
+    @property
+    def str(self):
+        '''
+        String methods on Series.
+        '''
+        # accessing the `.str` attribute of a pd.Series will raise an 
+        # AttributeError if the series does not consist of string values. We
+        # use a property here to replicate this behavior.
+        return SeriesStringMethods(self._pd.str)
 
     # Formatting
     def __repr__(self):
@@ -1310,6 +1332,20 @@ class Series(object):
 
     def __le__(self, other):
         f = _lift_to_pd(self._pd.__le__)
+        return f(other)
+
+    # bitwise operators
+
+    def __and__(self, other):
+        f = _lift_to_pd(self._pd.__and__)
+        return f(other)
+
+    def __or__(self, other):
+        f = _lift_to_pd(self._pd.__or__)
+        return f(other)
+
+    def __xor__(self, other):
+        f = _lift_to_pd(self._pd.__xor__)
         return f(other)
 
     # othe dunder methods
