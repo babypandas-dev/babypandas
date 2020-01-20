@@ -1285,6 +1285,10 @@ class Series(object):
         f = _lift_to_pd(self._pd.__add__)
         return f(other)
 
+    def __radd__(self, other):
+        f = _lift_to_pd(self._pd.__radd__)
+        return f(other)
+
     def __mul__(self, other):
         f = _lift_to_pd(self._pd.__mul__)
         return f(other)
@@ -1300,6 +1304,14 @@ class Series(object):
     def __sub__(self, other):
         f = _lift_to_pd(self._pd.__sub__)
         return f(other)
+
+    def __rsub__(self, other):
+        f = _lift_to_pd(self._pd.__rsub__)
+        return f(other)
+
+    def __neg__(self):
+        f = _lift_to_pd(self._pd.__neg__)
+        return f()
 
     def __truediv__(self, other):
         f = _lift_to_pd(self._pd.__truediv__)
