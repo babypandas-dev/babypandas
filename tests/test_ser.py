@@ -223,3 +223,42 @@ def test_bitwise_xor():
     assert not result.iloc[1]
     assert result.iloc[2]
     assert result.iloc[3]
+
+
+def test_reverse_add():
+    # given
+    s = bpd.Series(data=[1,2,3])
+
+    # when
+    t = 1 + s
+
+    # then
+    assert t.iloc[0] == 2
+    assert t.iloc[1] == 3
+    assert t.iloc[2] == 4
+
+
+def test_reverse_subtract():
+    # given
+    s = bpd.Series(data=[1,2,3])
+
+    # when
+    t = 1 - s
+
+    # then
+    assert t.iloc[0] == 0
+    assert t.iloc[1] == -1
+    assert t.iloc[2] == -2
+
+
+def test_negation():
+    # given
+    s = bpd.Series(data=[1,2,3])
+
+    # when
+    t = -s
+
+    # then
+    assert t.iloc[0] == -1
+    assert t.iloc[1] == -2
+    assert t.iloc[2] == -3
