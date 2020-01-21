@@ -177,6 +177,18 @@ def test_str():
     assert result.iloc[3] == 'TEST'
 
 
+def test_str_dir():
+    # check that Series.str is discoverable with dir()
+
+    # given
+    s = bpd.Series(data=['this', 'is', 'a', 'test'])
+
+    # then
+    assert 'isupper' in dir(s.str)
+    assert 'wrap' in dir(s.str)
+    assert '__lt__' not in dir(s.str)
+
+
 def test_bitwise_and():
     # check that bitwise and between two Series works
 

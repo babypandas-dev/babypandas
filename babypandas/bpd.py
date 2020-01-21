@@ -801,6 +801,9 @@ class SeriesStringMethods(object):
     def __getattr__(self, name):
         return _lift_to_pd(getattr(self._methods, name))
 
+    def __dir__(self):
+        return [x for x in dir(self._methods) if not x.startswith('_')]
+
 
 class Series(object):
     '''
