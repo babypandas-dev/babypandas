@@ -624,7 +624,10 @@ class DataFrame(object):
         return f(keys=keys, drop=drop)
 
     # Combining
-    def merge(self, right, how='inner', on=None, left_on=None, right_on=None):
+    def merge(
+            self, right, how='inner', on=None, left_on=None, right_on=None, 
+            left_index=False, right_index=False
+        ):
         '''
         Merge DataFrame or named Series objects with a database-style join.
 
@@ -659,7 +662,14 @@ class DataFrame(object):
         right_on : label or list, or array-like
             Column or index level names to join on in the right DataFrame. Can
             also be an array or list of arrays of the length of the right
-            DataFrame.  These arrays are treated as if they are columns.
+         left_index : boolean, default False
+            Use the index from the left DataFrame as the join key(s). If it is
+            a MultiIndex, the number of keys in the other DataFrame (either the
+            index or a number of columns) must match the number of levels
+        right_index : boolean, default False
+            Use the index from the right DataFrame as the join key. Same
+            caveats as left_index   DataFrame.  These arrays are treated as if
+            they are columns.
 
         Returns
         -------
@@ -685,13 +695,14 @@ class DataFrame(object):
         2  lizard  reptile   r
         3  turtle  reptile   r
         '''
+        using_index = left_index or right_index
         if not isinstance(right, DataFrame):
             raise TypeError('Argument `right` must by a DataFrame')
         if how not in ['left', 'right', 'outer', 'inner']:
             raise ValueError('Argument `how` must be either \'left\', \'right\', \'outer\', or \'inner\'')
         if (on not in self._pd.columns or on not in right.columns) and on != None:
             raise KeyError('Label \'{}\' not found in both DataFrames'.format(on))
-        if (left_on == None and right_on != None) or (left_on != None and right_on == None):
+        if not using_index and ((left_on == None and right_on != None) or (left_on != None and right_on == None)):
             raise KeyError('Both `left_on` and `right_on` must be column labels')
         if left_on != None and right_on != None:
             if left_on not in self._pd.columns:
@@ -700,7 +711,10 @@ class DataFrame(object):
                 raise KeyError('Label \'{}\' not found in right DataFrame'.format(right_on))
 
         f = _lift_to_pd(self._pd.merge)
-        return f(right=right, how=how, on=on, left_on=left_on, right_on=right_on)
+        return f(
+            right=right, how=how, on=on, left_on=left_on, right_on=right_on, 
+            left_index=left_index, right_index=right_index
+        )
 
     def append(self, other, ignore_index=False):
         '''

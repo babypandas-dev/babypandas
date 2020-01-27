@@ -32,6 +32,9 @@ def dfs():
     inputs.append({'data': {'letter': ['d' ,'e'],
                             'count': [4, 1],
                             'idx': [3, 4]}})
+    # df6 input: DataFrame for merge
+    inputs.append({'data': {'kind': ['mammal', 'bird', 'reptile'],
+                            'len': [6,  4, 7]}})
 
     dct = {}
     for key in range(len(inputs)):
@@ -191,6 +194,22 @@ def test_merge(dfs):
     assert pytest.raises(KeyError, df3.merge, right=df4, left_on='kind')
     assert pytest.raises(KeyError, df3.merge, right=df4, left_on='foo', right_on='kind')
     assert pytest.raises(KeyError, df3.merge, right=df4, left_on='kind', right_on='foo')
+
+def test_merge_on_index(dfs):
+    df3, pdf3 = dfs['df3']
+    df4, pdf4 = dfs['df4']
+    df4 = df4.set_index('kind')
+    pdf4 = pdf4.set_index('kind')
+    assert_df_equal(df3.merge(df4, left_on='kind', right_index=True), pdf3.merge(pdf4, left_on='kind', right_index=True))
+
+def test_merge_on_both_index(dfs):
+    df4, pdf4 = dfs['df4']
+    df6, pdf6 = dfs['df6']
+    df4 = df4.set_index('kind')
+    pdf4 = pdf4.set_index('kind')
+    df6 = df6.set_index('kind')
+    pdf6 = pdf6.set_index('kind')
+    assert_df_equal(df4.merge(df6, left_index=True, right_index=True), pdf4.merge(pdf6, left_index=True, right_index=True))
 
 def test_append(dfs):
     df1, pdf1 = dfs['df1']
