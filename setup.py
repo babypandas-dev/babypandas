@@ -13,6 +13,7 @@ setup(
     packages = ['babypandas'],
     version = '0.1.5',
     install_requires = install_requires,
+    tests_require = ['pytest'],
     description = 'A restricted Pandas API',
     long_description = long_description,
     long_description_content_type="text/markdown",
