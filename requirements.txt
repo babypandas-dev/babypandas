@@ -1,3 +1,2 @@
 pandas >= 0.24
-pytest == 4.6.3
 numpy

@@ -1067,6 +1067,28 @@ class Series(object):
         f = _lift_to_pd(self._pd.sort_values)
         return f(ascending=ascending)
 
+    def unique(self):
+        '''
+        Return unique values of Series object.
+
+        Parameters
+        ----------
+        None
+
+        Returns
+        -------
+        values : ndarray
+            A NumPy array containing the unique values, in order of appearance.
+
+        Examples
+        --------
+        >>> s = bpd.Series(data=[6, 7, 7, 5, 9, 5, 1])
+        >>> s.unique()
+        array([6, 7, 5, 9, 1])
+        '''
+        f = _lift_to_pd(self._pd.unique)
+        return f()
+
     def describe(self):
         '''
         Generate descriptive statistics.
@@ -1380,6 +1402,12 @@ class Series(object):
     # othe dunder methods
     def __len__(self):
         return self._pd.__len__()
+
+    def __invert__(self):
+        '''unary inversion, ~ operator'''
+        f = _lift_to_pd(self._pd.__invert__)
+        return f()
+
 
     # array interface (for applying numpy functions)
     def __array__(self, *vargs, **kwargs):

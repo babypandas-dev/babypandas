@@ -19,6 +19,8 @@ def sers():
     inputs.append({'data': ['a', 'b', 'c', 'd']})
     # ser3 input: Unsorted Series
     inputs.append({'data': [7, 1, 3, 4, 2]})
+    # ser4 input: Duplicates
+    inputs.append({'data': [1, 1, 2, 2, 2, 3]})
 
     dct = {}
     for key in range(len(inputs)):
@@ -98,6 +100,10 @@ def test_sort_values(sers):
 def test_describe(sers):
     for ser, pser in sers.values():
         assert_series_equal(ser, pser, 'describe')
+
+def test_unique(sers):
+    for ser, pser in sers.values():
+        assert_array_equal(ser, pser)
 
 def test_reset_index(sers):
     for ser, pser in sers.values():
@@ -235,6 +241,21 @@ def test_bitwise_xor():
     assert not result.iloc[1]
     assert result.iloc[2]
     assert result.iloc[3]
+
+
+def test_unary_not():
+    # check that ~x works on boolean series
+
+    # given
+    s = bpd.Series(data=[True, True, False])
+
+    # when
+    result = ~s
+
+    # then
+    assert not result.iloc[0]
+    assert not result.iloc[1]
+    assert result.iloc[2]
 
 
 def test_reverse_add():
