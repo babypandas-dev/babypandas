@@ -90,3 +90,7 @@ Berkeley `datascience` module equivalents with `babypandas`:
 | `table.join(col, df2, col)`          		  | `df.merge(df2, on=col)`                                    | merges two dataframes (same col names)    |
 | `table.sample(n)`                    		  | `df.sample(n, replace=True)`                               | sample with replacement                   |
 | `sample_proportions(size, distr)`    		  | `np.random.multinomial(size, distr) / size`                | gets sample proportions of a distribution |
+
+## Development
+
+To publish changes to PyPI, simply push a tagged commit to the `master` branch of this repository. Note that the commit must be tagged!
