@@ -251,3 +251,11 @@ def test_indexing(dfs):
                    (col1_is_5, 'col1')):
         with pytest.raises(IndexError):
             bp_df[indexer]
+
+def test_transpose_produces_bpd_frame():
+    """Check that .T produces a babypandas frame, not a pd.DataFrame."""
+    df = bpd.DataFrame()
+    df = df.assign(**{'foo': [1, 2, 3], 'bar': [4, 5, 6]})
+
+    assert isinstance(df, bpd.DataFrame)
+    assert isinstance(df.T, bpd.DataFrame)

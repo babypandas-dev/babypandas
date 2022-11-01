@@ -35,13 +35,25 @@ class DataFrame(object):
         self.loc = DataFrameIndexer(self._pd.loc)
         self.iloc = DataFrameIndexer(self._pd.iloc)
 
-        # Properties
-        self.shape = _lift_to_pd(self._pd.shape)
-        self.columns = _lift_to_pd(self._pd.columns)
-        self.index = _lift_to_pd(self._pd.index)
-        self.values = _lift_to_pd(self._pd.values)
-        self.T = _lift_to_pd(self._pd.T)
+    @property
+    def T(self):
+        return self.__class__(data=self._pd.T)
 
+    @property
+    def index(self):
+        return self._pd.index
+
+    @property
+    def columns(self):
+        return self._pd.columns
+
+    @property
+    def values(self):
+        return self._pd.values
+
+    @property
+    def shape(self):
+        return self._pd.shape
 
     # Formatting
     def __repr__(self):
