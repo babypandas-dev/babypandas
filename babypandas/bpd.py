@@ -643,7 +643,7 @@ class DataFrame(object):
             self, right, how='inner', on=None, left_on=None, right_on=None, 
             left_index=False, right_index=False
         ):
-        '''
+        r'''
         Merge DataFrame or named Series objects with a database-style join.
 
         The join is done on columns or indexes. If joining columns on columns,
