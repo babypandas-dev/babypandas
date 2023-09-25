@@ -6,9 +6,12 @@ import pandas as pd
 from pandas.core import common as com
 from pandas.core import indexing
 
+from babypandas.utils import decorate_all_methods, suppress_warnings
+
 pd.set_option("display.max_rows", 10)
 
 
+@decorate_all_methods(suppress_warnings, exclude=["__getitem__"])
 class DataFrame(object):
     '''
     Custom DataFrame Class; Pandas DataFrames with methods removed.
@@ -816,6 +819,7 @@ class DataFrame(object):
         return f()
 
 
+@decorate_all_methods(suppress_warnings)
 class SeriesStringMethods(object):
     '''
     String methods on Series objects. Will return bpd.Series
@@ -831,6 +835,7 @@ class SeriesStringMethods(object):
         return [x for x in dir(self._methods) if not x.startswith('_')]
 
 
+@decorate_all_methods(suppress_warnings)
 class Series(object):
     '''
     Custom Series class; Pandas Series with methods removed.
@@ -1431,6 +1436,7 @@ class Series(object):
         return self._pd
 
 
+@decorate_all_methods(suppress_warnings)
 class DataFrameGroupBy(object):
     '''
     '''
@@ -1501,6 +1507,7 @@ class DataFrameGroupBy(object):
         return f()
 
 
+@decorate_all_methods(suppress_warnings)
 class DataFrameIndexer(object):
     '''
     Class lifts results of loc/iloc back to the custom DataFrame class.
@@ -1528,6 +1535,7 @@ class DataFrameIndexer(object):
             return data
 
 
+@suppress_warnings
 def _lift_to_pd(func):
     '''Checks output-type of function and if output is a
     Pandas object, lifts the output to a babypandas class'''
@@ -1557,6 +1565,7 @@ def _lift_to_pd(func):
     return closure
 
 
+@suppress_warnings
 def read_csv(filepath, **kwargs):
     '''read_csv'''
     df = pd.read_csv(filepath, **kwargs)
