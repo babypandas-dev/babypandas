@@ -2,9 +2,6 @@
 
 A `pandas` data-analysis library with a restricted API
 
-[![Build Status](https://travis-ci.com/afraenkel/babypandas.svg?branch=master)](https://travis-ci.com/afraenkel/babypandas)
-[![Documentation Status](https://readthedocs.org/projects/babypandas/badge/?version=latest)](https://babypandas.readthedocs.io/en/latest/?badge=latest)
-
 ---
 
 The `pandas` library  for tabular data analysis is powerful and popular, but perhaps not the easiest to learn: for nearly every
