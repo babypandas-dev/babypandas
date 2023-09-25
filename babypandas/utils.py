@@ -8,6 +8,7 @@ def decorate_all_methods(decorator, exclude=[]):
             if callable(getattr(cls, attr)) and attr not in exclude:
                 setattr(cls, attr, decorator(getattr(cls, attr)))
         return cls
+
     return decorate
 
 
@@ -17,4 +18,5 @@ def suppress_warnings(func):
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
             return func(*args, **kwargs)
+
     return wrapper
