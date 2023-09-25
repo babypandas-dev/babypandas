@@ -6,11 +6,14 @@ import pandas as pd
 from pandas.core import common as com
 from pandas.core import indexing
 
+from babypandas.utils import decorate_all_methods, suppress_warnings
+
 pd.set_option("display.max_rows", 10)
 
 
+@decorate_all_methods(suppress_warnings, exclude=["__getitem__"])
 class DataFrame(object):
-    '''
+    """
     Custom DataFrame Class; Pandas DataFrames with methods removed.
 
     Examples
@@ -22,12 +25,12 @@ class DataFrame(object):
     (2, 4)
     >>> df.loc[1, 'b']
     5
-    '''
+    """
 
     def __init__(self, **kwargs):
-        '''
+        """
         Create an empty DataFrame.
-        '''
+        """
         # hidden pandas dataframe object
         self._pd = pd.DataFrame(**kwargs)
 
@@ -64,7 +67,7 @@ class DataFrame(object):
 
     # return the underlying DataFrame
     def to_df(self):
-        '''Return the full pandas DataFrame.'''
+        """Return the full pandas DataFrame."""
         return self._pd
 
     # Creation
@@ -111,13 +114,15 @@ class DataFrame(object):
         return f()
 
     def __getitem__(self, key):
-        if getattr(key, 'to_ser', None):  # Convert to pd.Series
+        if getattr(key, "to_ser", None):  # Convert to pd.Series
             key = key.to_ser()
         if not com.is_bool_indexer(key):
-            raise IndexError('BabyPandas only accepts Boolean objects '
-                             'when indexing against the data frame; '
-                             'please use .get to get columns, and '
-                             '.loc or .iloc for more complex cases.')
+            raise IndexError(
+                "BabyPandas only accepts Boolean objects "
+                "when indexing against the data frame; "
+                "please use .get to get columns, and "
+                ".loc or .iloc for more complex cases."
+            )
         f = _lift_to_pd(self._pd._getitem_bool_array)
         return f(key)
 
@@ -161,11 +166,11 @@ class DataFrame(object):
         2    lion  mammal
         """
         if not isinstance(indices, Iterable):
-            raise TypeError('Argument `indices` must be a list-like object')
+            raise TypeError("Argument `indices` must be a list-like object")
         if not all(isinstance(x, (int, np.integer)) for x in indices):
-            raise ValueError('Argument `indices` must only contain integers')
+            raise ValueError("Argument `indices` must only contain integers")
         if not all(x < self._pd.shape[0] for x in indices):
-            raise IndexError('Indices are out-of-bounds')
+            raise IndexError("Indices are out-of-bounds")
 
         f = _lift_to_pd(self._pd.take)
         return f(indices=indices)
@@ -207,17 +212,23 @@ class DataFrame(object):
         2  8  11
         """
         if not isinstance(columns, Iterable):
-            raise TypeError('Argument `columns` must be a string label or list of string labels')
-        mask = [columns not in self.columns] if isinstance(columns, str) else [x not in self.columns for x in columns]
+            raise TypeError(
+                "Argument `columns` must be a string label or list of string labels"
+            )
+        mask = (
+            [columns not in self.columns]
+            if isinstance(columns, str)
+            else [x not in self.columns for x in columns]
+        )
         if any(mask):
             c = [columns] if isinstance(columns, str) else columns
-            raise KeyError('{} not found in columns'.format(np.array(c)[mask]))
+            raise KeyError("{} not found in columns".format(np.array(c)[mask]))
 
         f = _lift_to_pd(self._pd.drop)
         return f(columns=columns)
 
     def sample(self, n=None, *, replace=False, random_state=None):
-        '''
+        """
         Return a random sample of rows from a data frame.
 
         You can use `random_state` for reproducibility.
@@ -252,21 +263,23 @@ class DataFrame(object):
         >>> df.sample(1, random_state=0)
             letter  count  points
         2      c      3       2
-        '''
+        """
         if not isinstance(n, int) and n != None:
-            raise TypeError('Argument `n` not an integer')
+            raise TypeError("Argument `n` not an integer")
         if not isinstance(replace, bool):
-            raise TypeError('Argument `replace` not a boolean')
+            raise TypeError("Argument `replace` not a boolean")
         if not isinstance(random_state, int) and random_state != None:
-            raise TypeError('Argument `random_state` must be an integer or None')
+            raise TypeError("Argument `random_state` must be an integer or None")
         if n != None and n > self._pd.shape[0] and replace == False:
-            raise ValueError('Cannot take a larger sample than length of DataFrame when `replace=False`')
+            raise ValueError(
+                "Cannot take a larger sample than length of DataFrame when `replace=False`"
+            )
 
         f = _lift_to_pd(self._pd.sample)
         return f(n=n, replace=replace, random_state=random_state)
 
     def get(self, key):
-        ''' Return column or columns from data frame.
+        """Return column or columns from data frame.
 
         Parameters
         ----------
@@ -299,20 +312,26 @@ class DataFrame(object):
         0      9       1
         1      3       2
         2      3       2
-        '''
+        """
         if not isinstance(key, str) and not isinstance(key, Iterable):
-            raise TypeError('Argument `key` must be a string label or list of string labels')
-        mask = [key not in self.columns] if isinstance(key, str) else [x not in self.columns for x in key]
+            raise TypeError(
+                "Argument `key` must be a string label or list of string labels"
+            )
+        mask = (
+            [key not in self.columns]
+            if isinstance(key, str)
+            else [x not in self.columns for x in key]
+        )
         if any(mask):
             k = [key] if isinstance(key, str) else key
-            raise KeyError('{} not found in columns'.format(np.array(k)[mask]))
+            raise KeyError("{} not found in columns".format(np.array(k)[mask]))
 
         f = _lift_to_pd(self._pd.get)
         return f(key=key)
 
     # Creation
     def assign(self, **kwargs):
-        '''
+        """
         Assign new columns to a DataFrame.
 
         Returns a new object with all original columns in addition to new ones.
@@ -346,12 +365,14 @@ class DataFrame(object):
               flower   color
         0  sunflower  yellow
         1       rose     red
-        '''
+        """
         if len(set(map(len, kwargs.values()))) not in (0, 1):
-            raise ValueError('Not all columns have the same length')
+            raise ValueError("Not all columns have the same length")
         if self._pd.shape[1] != 0:
             if len(list(kwargs.values())[0]) != self._pd.shape[0]:
-                raise ValueError('New column does not have the same length as existing DataFrame')
+                raise ValueError(
+                    "New column does not have the same length as existing DataFrame"
+                )
 
         f = _lift_to_pd(self._pd.assign)
         return f(**kwargs)
@@ -393,16 +414,17 @@ class DataFrame(object):
         1  3  4
         """
         if not callable(func):
-            raise TypeError('Argument `func` must be a function')
-        if axis not in [0, 1, 'index', 'columns']:
-            raise ValueError('Argument `axis` must be one of 0, 1 '
-                            '"index" or "columns"')
+            raise TypeError("Argument `func` must be a function")
+        if axis not in [0, 1, "index", "columns"]:
+            raise ValueError(
+                "Argument `axis` must be one of 0, 1 " '"index" or "columns"'
+            )
 
         f = _lift_to_pd(self._pd.apply)
         return f(func=func, axis=axis)
 
     def sort_values(self, by, *, ascending=True):
-        '''
+        """
         Sort by the values in column(s) named in `by`.
 
         Parameters
@@ -440,21 +462,27 @@ class DataFrame(object):
         1  George   25        168
         0   Sally   21        161
         3     Ann   28        149
-        '''
+        """
         if not isinstance(by, Iterable):
-            raise TypeError('Argument `by` must be a string label or list of string labels')
-        mask = [by not in self.columns] if isinstance(by, str) else [x not in self.columns for x in by]
+            raise TypeError(
+                "Argument `by` must be a string label or list of string labels"
+            )
+        mask = (
+            [by not in self.columns]
+            if isinstance(by, str)
+            else [x not in self.columns for x in by]
+        )
         if any(mask):
             b = [by] if isinstance(by, str) else by
-            raise KeyError('{} not found in columns'.format(np.array(b)[mask]))
+            raise KeyError("{} not found in columns".format(np.array(b)[mask]))
         if not isinstance(ascending, bool):
-            raise TypeError('Argument `ascending` must be a boolean')
+            raise TypeError("Argument `ascending` must be a boolean")
 
         f = _lift_to_pd(self._pd.sort_values)
         return f(by=by, ascending=ascending)
 
     def describe(self):
-        '''
+        """
         Generate descriptive statistics.
 
         Statistics summarize the central tendency, dispersion and shape of a
@@ -486,12 +514,12 @@ class DataFrame(object):
         50%    10.0  2.0
         75%    15.0  2.5
         max    20.0  3.0
-        '''
+        """
         f = _lift_to_pd(self._pd.describe)
         return f()
 
     def groupby(self, by):
-        '''
+        """
         Group DataFrame by values in columns specified in `by`.
 
         A groupby operation involves some combination of splitting the object,
@@ -524,19 +552,25 @@ class DataFrame(object):
         animal
         Falcon      375.0
         Parrot       25.0
-        '''
+        """
         if not isinstance(by, Iterable):
-            raise TypeError('Argument `by` must be a string label or list of string labels')
-        mask = [by not in self.columns] if isinstance(by, str) else [x not in self.columns for x in by]
+            raise TypeError(
+                "Argument `by` must be a string label or list of string labels"
+            )
+        mask = (
+            [by not in self.columns]
+            if isinstance(by, str)
+            else [x not in self.columns for x in by]
+        )
         if any(mask):
             b = [by] if isinstance(by, str) else by
-            raise KeyError('{} not found in columns'.format(np.array(b)[mask]))
+            raise KeyError("{} not found in columns".format(np.array(b)[mask]))
 
         f = _lift_to_pd(self._pd.groupby)
         return f(by=by)
 
     def reset_index(self, *, drop=False):
-        '''
+        """
         Reset the index.
 
         Reset the index of the DataFrame, and use the default one instead.
@@ -552,8 +586,8 @@ class DataFrame(object):
         DataFrame
             DataFrame with the new index.
 
-        Reset the index of the DataFrame, and use the default one 
-        instead. If the DataFrame has a MultiIndex, this method can 
+        Reset the index of the DataFrame, and use the default one
+        instead. If the DataFrame has a MultiIndex, this method can
         remove one or more levels.
 
         Examples
@@ -575,15 +609,15 @@ class DataFrame(object):
         2  George   25        168
         3     Ann   28        149
 
-        '''
+        """
         if not isinstance(drop, bool):
-            raise TypeError('Argument `drop` must be a boolean')
+            raise TypeError("Argument `drop` must be a boolean")
 
         f = _lift_to_pd(self._pd.reset_index)
         return f(drop=drop)
 
     def set_index(self, keys, drop=True):
-        '''
+        """
         Set the DataFrame index using existing columns.
 
         Set the DataFrame index (row labels) using one or more existing
@@ -622,25 +656,37 @@ class DataFrame(object):
         George   25        168
         Bill     18        171
         Ann      28        149
-        '''
+        """
         if not isinstance(keys, Iterable):
-            raise TypeError('Argument `keys` must be a string label or list of string labels')
-        mask = [keys not in self.columns] if isinstance(keys, str) else [x not in self.columns for x in keys]
+            raise TypeError(
+                "Argument `keys` must be a string label or list of string labels"
+            )
+        mask = (
+            [keys not in self.columns]
+            if isinstance(keys, str)
+            else [x not in self.columns for x in keys]
+        )
         if any(mask):
             k = [keys] if isinstance(keys, str) else keys
-            raise KeyError('{} not found in columns'.format(np.array(k)[mask]))
+            raise KeyError("{} not found in columns".format(np.array(k)[mask]))
         if not isinstance(drop, bool):
-            raise TypeError('Argument `drop` must be a boolean')
+            raise TypeError("Argument `drop` must be a boolean")
 
         f = _lift_to_pd(self._pd.set_index)
         return f(keys=keys, drop=drop)
 
     # Combining
     def merge(
-            self, right, how='inner', on=None, left_on=None, right_on=None, 
-            left_index=False, right_index=False
-        ):
-        '''
+        self,
+        right,
+        how="inner",
+        on=None,
+        left_on=None,
+        right_on=None,
+        left_index=False,
+        right_index=False,
+    ):
+        r"""
         Merge DataFrame or named Series objects with a database-style join.
 
         The join is done on columns or indexes. If joining columns on columns,
@@ -706,30 +752,42 @@ class DataFrame(object):
         1     cat   mammal   m
         2  lizard  reptile   r
         3  turtle  reptile   r
-        '''
+        """
         using_index = left_index or right_index
         if not isinstance(right, DataFrame):
-            raise TypeError('Argument `right` must by a DataFrame')
-        if how not in ['left', 'right', 'outer', 'inner']:
-            raise ValueError('Argument `how` must be either \'left\', \'right\', \'outer\', or \'inner\'')
+            raise TypeError("Argument `right` must by a DataFrame")
+        if how not in ["left", "right", "outer", "inner"]:
+            raise ValueError(
+                "Argument `how` must be either 'left', 'right', 'outer', or 'inner'"
+            )
         if (on not in self._pd.columns or on not in right.columns) and on != None:
-            raise KeyError('Label \'{}\' not found in both DataFrames'.format(on))
-        if not using_index and ((left_on == None and right_on != None) or (left_on != None and right_on == None)):
-            raise KeyError('Both `left_on` and `right_on` must be column labels')
+            raise KeyError("Label '{}' not found in both DataFrames".format(on))
+        if not using_index and (
+            (left_on == None and right_on != None)
+            or (left_on != None and right_on == None)
+        ):
+            raise KeyError("Both `left_on` and `right_on` must be column labels")
         if left_on != None and right_on != None:
             if left_on not in self._pd.columns:
-                raise KeyError('Label \'{}\' not found in left DataFrame'.format(left_on))
+                raise KeyError("Label '{}' not found in left DataFrame".format(left_on))
             if right_on not in right.columns:
-                raise KeyError('Label \'{}\' not found in right DataFrame'.format(right_on))
+                raise KeyError(
+                    "Label '{}' not found in right DataFrame".format(right_on)
+                )
 
         f = _lift_to_pd(self._pd.merge)
         return f(
-            right=right, how=how, on=on, left_on=left_on, right_on=right_on, 
-            left_index=left_index, right_index=right_index
+            right=right,
+            how=how,
+            on=on,
+            left_on=left_on,
+            right_on=right_on,
+            left_index=left_index,
+            right_index=right_index,
         )
 
     def append(self, other, ignore_index=False):
-        '''
+        """
         Append rows of `other` to the end of caller, returning a new object.
 
         Columns in `other` that are not in the caller are added as new columns.
@@ -745,11 +803,11 @@ class DataFrame(object):
         -------
         a_df : DataFrame
             DataFrame with appended rows.
-        '''
+        """
         if not isinstance(other, DataFrame):
-            raise TypeError('Argument `other` must by a DataFrame')
+            raise TypeError("Argument `other` must by a DataFrame")
         if not isinstance(ignore_index, bool):
-            raise TypeError('Argument `ignore_index` must be a boolean')
+            raise TypeError("Argument `ignore_index` must be a boolean")
 
         f = _lift_to_pd(self._pd.append)
         return f(other=other, ignore_index=ignore_index)
@@ -770,7 +828,7 @@ class DataFrame(object):
 
     # IO
     def to_csv(self, path_or_buf=None, *, index=True):
-        '''
+        """
         Write object to a comma-separated values (csv) file.
 
         Parameters
@@ -786,15 +844,15 @@ class DataFrame(object):
         None or str
             If path_or_buf is None, returns the resulting csv format as a
             string. Otherwise returns None.
-        '''
+        """
         if not isinstance(index, bool):
-            raise TypeError('Argument `index` must be a boolean')
+            raise TypeError("Argument `index` must be a boolean")
 
         f = _lift_to_pd(self._pd.to_csv)
         return f(path_or_buf=path_or_buf, index=index)
 
     def to_numpy(self):
-        '''
+        """
         Convert the DataFrame to a NumPy array.
 
         By default, the dtype of the returned array will be the common NumPy
@@ -811,15 +869,16 @@ class DataFrame(object):
         -------
         df_arr : numpy.ndarray
             DataFrame as a NumPy array.
-        '''
+        """
         f = _lift_to_pd(self._pd.to_numpy)
         return f()
 
 
+@decorate_all_methods(suppress_warnings)
 class SeriesStringMethods(object):
-    '''
+    """
     String methods on Series objects. Will return bpd.Series
-    '''
+    """
 
     def __init__(self, methods):
         self._methods = methods
@@ -828,18 +887,19 @@ class SeriesStringMethods(object):
         return _lift_to_pd(getattr(self._methods, name))
 
     def __dir__(self):
-        return [x for x in dir(self._methods) if not x.startswith('_')]
+        return [x for x in dir(self._methods) if not x.startswith("_")]
 
 
+@decorate_all_methods(suppress_warnings)
 class Series(object):
-    '''
+    """
     Custom Series class; Pandas Series with methods removed.
-    '''
+    """
 
     def __init__(self, **kwargs):
-        '''
+        """
         Create an empty Series.
-        '''
+        """
         # hidden pandas dataeriesframe object
         self._pd = pd.Series(**kwargs)
 
@@ -853,10 +913,10 @@ class Series(object):
 
     @property
     def str(self):
-        '''
+        """
         String methods on Series.
-        '''
-        # accessing the `.str` attribute of a pd.Series will raise an 
+        """
+        # accessing the `.str` attribute of a pd.Series will raise an
         # AttributeError if the series does not consist of string values. We
         # use a property here to replicate this behavior.
         return SeriesStringMethods(self._pd.str)
@@ -869,19 +929,21 @@ class Series(object):
         return self._pd.__str__()
 
     def __getitem__(self, key):
-        if getattr(key, 'to_ser', None):  # Convert to pd.Series
+        if getattr(key, "to_ser", None):  # Convert to pd.Series
             key = key.to_ser()
         if not com.is_bool_indexer(key):
-            raise IndexError('BabyPandas only accepts Boolean objects '
-                             'when indexing against the Series; please use '
-                             '.loc or .iloc for more complex cases.')
+            raise IndexError(
+                "BabyPandas only accepts Boolean objects "
+                "when indexing against the Series; please use "
+                ".loc or .iloc for more complex cases."
+            )
         key = indexing.check_bool_indexer(self.index, key)
         f = _lift_to_pd(self._pd._get_with)
         return f(key)
 
     # Selection
     def take(self, indices):
-        '''
+        """
         Return the elements in the given *positional* indices.
 
         This means that we are not indexing according to actual values in the
@@ -915,19 +977,19 @@ class Series(object):
         A    1
         B    2
         dtype: int64
-        '''
+        """
         if not isinstance(indices, Iterable):
-            raise TypeError('Argument `indices` must be a list-like object')
+            raise TypeError("Argument `indices` must be a list-like object")
         if not all(isinstance(x, (int, np.integer)) for x in indices):
-            raise ValueError('Argument `indices` must only contain integers')
+            raise ValueError("Argument `indices` must only contain integers")
         if not all(x < self._pd.shape[0] for x in indices):
-            raise IndexError('Indices are out-of-bounds')
+            raise IndexError("Indices are out-of-bounds")
 
         f = _lift_to_pd(self._pd.take)
         return f(indices)
 
     def sample(self, n=None, replace=False, random_state=None):
-        '''
+        """
         Return a random sample of elements from a Series.
 
         You can use `random_state` for reproducibility.
@@ -971,15 +1033,17 @@ class Series(object):
         4    5
         1    2
         dtype: int64
-        '''
+        """
         if not isinstance(n, int) and n != None:
-            raise TypeError('Argument `n` not an integer')
+            raise TypeError("Argument `n` not an integer")
         if not isinstance(replace, bool):
-            raise TypeError('Argument `replace` not a boolean')
+            raise TypeError("Argument `replace` not a boolean")
         if not isinstance(random_state, int) and random_state != None:
-            raise TypeError('Argument `random_state` must be an integer or None')
+            raise TypeError("Argument `random_state` must be an integer or None")
         if n != None and n > self._pd.shape[0] and replace == False:
-            raise ValueError('Cannot take a larger sample than length of DataFrame when `replace=False`')
+            raise ValueError(
+                "Cannot take a larger sample than length of DataFrame when `replace=False`"
+            )
 
         f = _lift_to_pd(self._pd.sample)
         return f(n=n, replace=replace, random_state=random_state)
@@ -995,13 +1059,13 @@ class Series(object):
         -------
         value : same type as items contained in object
         """
-        
+
         f = _lift_to_pd(self._pd.get)
         return f(key, default=default)
 
     # Transformation
     def apply(self, func):
-        '''
+        """
         Invoke function on values of Series.
 
         Can be ufunc (a NumPy function that applies to the entire Series)
@@ -1032,15 +1096,15 @@ class Series(object):
         3    5
         4    5
         dtype: int64
-        '''
+        """
         if not callable(func):
-            raise TypeError('Argument `func` must be a function')
+            raise TypeError("Argument `func` must be a function")
 
         f = _lift_to_pd(self._pd.apply)
         return f(func=func)
 
     def sort_values(self, *, ascending=True):
-        '''
+        """
         Sort by the values.
 
         Sort a Series in ascending or descending order.
@@ -1072,15 +1136,15 @@ class Series(object):
         1    4
         2    3
         dtype: int64
-        '''
+        """
         if not isinstance(ascending, bool):
-            raise TypeError('Argument `ascending` must be a boolean')
+            raise TypeError("Argument `ascending` must be a boolean")
 
         f = _lift_to_pd(self._pd.sort_values)
         return f(ascending=ascending)
 
     def unique(self):
-        '''
+        """
         Return unique values of Series object.
 
         Parameters
@@ -1097,12 +1161,12 @@ class Series(object):
         >>> s = bpd.Series(data=[6, 7, 7, 5, 9, 5, 1])
         >>> s.unique()
         array([6, 7, 5, 9, 1])
-        '''
+        """
         f = _lift_to_pd(self._pd.unique)
         return f()
 
     def describe(self):
-        '''
+        """
         Generate descriptive statistics.
 
         Statistics summarize the central tendency, dispersion and shape of a
@@ -1132,12 +1196,12 @@ class Series(object):
         75%      7.000000
         max      9.000000
         dtype: float64
-        '''
+        """
         f = _lift_to_pd(self._pd.describe)
         return f()
 
     def reset_index(self, *, drop=False):
-        '''
+        """
         Reset the index.
 
         This is useful when the index is meaningless and needs to be reset to
@@ -1176,15 +1240,15 @@ class Series(object):
         3    6
         4    9
         dtype: int64
-        '''
+        """
         if not isinstance(drop, bool):
-            raise TypeError('Argument `drop` must be a boolean')
+            raise TypeError("Argument `drop` must be a boolean")
 
         f = _lift_to_pd(self._pd.reset_index)
         return f(drop=drop)
 
     def where(self, cond, other):
-        '''
+        """
         Replace values where the condition is False.
 
         Parameters
@@ -1222,14 +1286,14 @@ class Series(object):
         3    3
         4    4
         dtype: int64
-        '''
+        """
 
         f = _lift_to_pd(self._pd.where)
         return f(cond, other)
 
     # Plotting
     def plot(self, *args, **kwargs):
-        '''
+        """
         Series plotting accessor and method.
 
         Examples
@@ -1237,13 +1301,13 @@ class Series(object):
         >>> s.plot.line()
         >>> s.plot.bar()
         >>> s.plot.hist()
-        '''
+        """
         f = _lift_to_pd(self._pd.plot)
         return f(*args, **kwargs)
 
     # IO
     def to_csv(self, path_or_buf=None, index=True):
-        '''
+        """
         Write object to a comma-separated values (csv) file.
 
         Parameters
@@ -1259,15 +1323,15 @@ class Series(object):
         None or str
             If path_or_buf is None, returns the resulting csv format as a
             string. Otherwise returns None.
-        '''
+        """
         if not isinstance(index, bool):
-            raise TypeError('Argument `index` must be a boolean')
+            raise TypeError("Argument `index` must be a boolean")
 
         f = _lift_to_pd(self._pd.to_csv)
         return f(path_or_buf=path_or_buf, index=index)
 
     def to_numpy(self):
-        '''
+        """
         A NumPy ndarray representing the values in this Series or Index.
 
         Parameters
@@ -1277,57 +1341,57 @@ class Series(object):
         Returns
         -------
         arr : numpy.ndarray
-        '''
+        """
         f = _lift_to_pd(self._pd.to_numpy)
         return f()
 
     # Calculations
     def count(self):
-        '''
+        """
         Return number of non-NA/null observations in the Series.
-        '''
+        """
         f = _lift_to_pd(self._pd.count)
         return f()
 
     def mean(self):
-        '''
+        """
         Return the mean of the values for the requested axis.
-        '''
+        """
         f = _lift_to_pd(self._pd.mean)
         return f()
 
     def median(self):
-        '''
+        """
         Return the median of the values for the requested axis.
-        '''
+        """
         f = _lift_to_pd(self._pd.median)
         return f()
 
     def min(self):
-        '''
+        """
         Return the minimum of the values in the Series.
-        '''
+        """
         f = _lift_to_pd(self._pd.min)
         return f()
 
     def max(self):
-        '''
+        """
         Return the maximum of the values in the Series.
-        '''
+        """
         f = _lift_to_pd(self._pd.max)
         return f()
 
     def sum(self):
-        '''
+        """
         Return the sum of the values in the Series.
-        '''
+        """
         f = _lift_to_pd(self._pd.sum)
         return f()
 
     def abs(self):
-        '''
+        """
         Return a Series with absolute numeric value of each element.
-        '''
+        """
         f = _lift_to_pd(self._pd.abs)
         return f()
 
@@ -1416,10 +1480,9 @@ class Series(object):
         return self._pd.__len__()
 
     def __invert__(self):
-        '''unary inversion, ~ operator'''
+        """unary inversion, ~ operator"""
         f = _lift_to_pd(self._pd.__invert__)
         return f()
-
 
     # array interface (for applying numpy functions)
     def __array__(self, *vargs, **kwargs):
@@ -1427,13 +1490,13 @@ class Series(object):
 
     # return the underlying Series
     def to_ser(self):
-        '''Return the underlying Pandas series'''
+        """Return the underlying Pandas series"""
         return self._pd
 
 
+@decorate_all_methods(suppress_warnings)
 class DataFrameGroupBy(object):
-    '''
-    '''
+    """ """
 
     def __init__(self, groupby):
         # hidden pandas dataframe object
@@ -1441,76 +1504,76 @@ class DataFrameGroupBy(object):
 
     # return the underlying groupby object
     def to_gb(self):
-        '''return the underlying pandas groupby object'''
+        """return the underlying pandas groupby object"""
         return self._pd
 
     def aggregate(self, func):
         if not callable(func):
-            raise Exception('Provide a function to aggregate')
+            raise Exception("Provide a function to aggregate")
 
         return self._pd.aggregate(func)
 
     # Calculations
     def count(self):
-        '''
+        """
         Compute count of group.
-        '''
+        """
         f = _lift_to_pd(self._pd.count)
         return f()
 
     def mean(self):
-        '''
+        """
         Compute mean of group.
-        '''
+        """
         f = _lift_to_pd(self._pd.mean)
         return f()
 
     def median(self):
-        '''
+        """
         Compute median of group.
-        '''
+        """
         f = _lift_to_pd(self._pd.median)
         return f()
 
     def min(self):
-        '''
+        """
         Compute min of group.
-        '''
+        """
         f = _lift_to_pd(self._pd.min)
         return f()
 
     def max(self):
-        '''
+        """
         Compute max of group.
-        '''
+        """
         f = _lift_to_pd(self._pd.max)
         return f()
 
     def sum(self):
-        '''
+        """
         Compute sum of group.
-        '''
+        """
         f = _lift_to_pd(self._pd.sum)
         return f()
 
     def size(self):
-        '''
+        """
         Compute group sizes.
-        '''
+        """
         f = _lift_to_pd(self._pd.size)
         return f()
 
 
+@decorate_all_methods(suppress_warnings)
 class DataFrameIndexer(object):
-    '''
+    """
     Class lifts results of loc/iloc back to the custom DataFrame class.
-    '''
+    """
 
     def __init__(self, indexer):
         self.idx = indexer
 
     def __getitem__(self, item):
-
         # convert to pandas if item is baby-pandas object
         try:
             item = item._pd
@@ -1528,9 +1591,10 @@ class DataFrameIndexer(object):
             return data
 
 
+@suppress_warnings
 def _lift_to_pd(func):
-    '''Checks output-type of function and if output is a
-    Pandas object, lifts the output to a babypandas class'''
+    """Checks output-type of function and if output is a
+    Pandas object, lifts the output to a babypandas class"""
 
     if not callable(func):
         return func
@@ -1539,8 +1603,7 @@ def _lift_to_pd(func):
 
     def closure(*vargs, **kwargs):
         vargs = [x._pd if isinstance(x, types) else x for x in vargs]
-        kwargs = {k: x._pd if isinstance(x, types) else x 
-                  for (k, x) in kwargs.items()}
+        kwargs = {k: x._pd if isinstance(x, types) else x for (k, x) in kwargs.items()}
 
         a = func(*vargs, **kwargs)
         if isinstance(a, pd.DataFrame):
@@ -1557,9 +1620,11 @@ def _lift_to_pd(func):
     return closure
 
 
+@suppress_warnings
 def read_csv(filepath, **kwargs):
-    '''read_csv'''
+    """read_csv"""
     df = pd.read_csv(filepath, **kwargs)
     return DataFrame(data=df)
+
 
 read_csv.__doc__ = pd.read_csv.__doc__
