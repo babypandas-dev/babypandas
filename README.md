@@ -7,11 +7,11 @@ A `pandas` data-analysis library with a restricted API
 
 ---
 
-The `pandas` library is a confusing mess of methods, and for every
+The `pandas` library  for tabular data analysis is powerful and popular, but perhaps not the easiest to learn: for nearly every
 task, no matter how simple, there are multiple ways of approaching
 it. `babypandas` is a simplified, introductory `pandas` library that
- allows for basic tabular data-analysis with only a small subset of
- methods and arguments. This allows for a smooth transition into `pandas`.
+ allows for basic tabular data analysis with only a small subset of
+ methods and arguments. This restricted interface is designed to be easier to learn while still demonstrating fundamental principles and allowing for a smooth transition into `pandas` at a later time.
  
  The chosen methods are meant to align with the methods in Berkeley's
  `datascience` module, developed for the [data8](https://data8.org)
