@@ -7,6 +7,9 @@ on:
       - closed
     branches:
       - master
+  push:
+    tags:
+      - '*'
 
 jobs:
   build-and-test:
