@@ -11,7 +11,7 @@ with open('README.md') as fh:
 setup(
     name = 'babypandas',
     packages = ['babypandas'],
-    version = '0.1.8',
+    version = '0.1.9',
     setup_requires=['pytest-runner'],
     install_requires = install_requires,
     tests_require = ['pytest'],
