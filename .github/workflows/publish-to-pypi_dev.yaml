@@ -24,7 +24,6 @@ jobs:
 
   build-and-publish:
     needs: build-and-test
-    if: github.event.pull_request.base.ref == 'dev_fa23'  # modified condition
     name: Build and publish dists to PyPI
     runs-on: ubuntu-latest
     steps:
