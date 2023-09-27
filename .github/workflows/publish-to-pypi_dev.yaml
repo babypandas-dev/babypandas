@@ -1,0 +1,54 @@
+name: Publish to PyPI Dev
+on:
+  push:
+    branches:   # added this section
+      - dev_fa23  # specify the branch name
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@master
+      - name: Set up Python 3.10
+        uses: actions/setup-python@v3
+        with:
+          python-version: "3.10"
+      - name: Install Dependencies
+        run: pip install -r requirements.txt
+      - name: Install Package Locally
+        run: pip install .
+      - name: Install Test Dependencies
+        run: pip install pytest
+      - name: Run Tests
+        run: pytest tests
+
+  build-and-publish:
+    needs: build-and-test
+    if: github.event.pull_request.base.ref == 'dev_fa23'  # modified condition
+    name: Build and publish dists to PyPI
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@master
+      - name: Set up Python 3.10
+        uses: actions/setup-python@v3
+        with:
+          python-version: "3.10"
+      - name: Install pypa/build
+        run: >-
+          python -m
+          pip install
+          build
+          --user
+      - name: Build a binary wheel and a source tarball
+        run: >-
+          python -m
+          build
+          --sdist
+          --wheel
+          --outdir dist/
+          .
+      - name: Publish distribution 📦 to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          password: ${{ secrets.PYPI_API_TOKEN }}
+
