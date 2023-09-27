@@ -90,4 +90,25 @@ Berkeley `datascience` module equivalents with `babypandas`:
 
 ## Development
 
-To publish changes to PyPI, simply push a tagged commit to the `master` branch of this repository. Note that the commit must be tagged!
+Publishing to PyPI requires that a tagged commit exists on the `master` branch. The GitHub Actions workflow will trigger
+package building and publishing to PyPI only when a commit on `master` is tagged. This can happen in one of two ways: 
+
+1. **Direct Tagged Commit to Master**: Commit your changes directly to `master` and tag the commit before pushing to 
+GitHub.
+```shell
+git commit -m "Your descriptive commit message"
+git tag <tag-name> # convention has been to tag with package version
+git push origin master
+git push origin <tag-name>
+```
+
+2. **Merge Pull Request to Master and Post-Hoc Tag**: Merge a pull request into `master`. After merging, tag the resulting 
+commit in `master`.
+```shell
+git checkout master
+git pull origin master
+git tag <tag-name>
+git push origin <tag-name>
+```
+
+Either of these approaches will trigger testing, building, and publishing of the package to PyPI.
