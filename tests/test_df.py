@@ -259,3 +259,13 @@ def test_transpose_produces_bpd_frame():
 
     assert isinstance(df, bpd.DataFrame)
     assert isinstance(df.T, bpd.DataFrame)
+
+
+def test_df_info():
+    """Check that info from bpd shows same info as pd"""
+
+    df = bpd.DataFrame()
+    df = df.assign(**{'foo': [1, 2, 3], 'bar': [4, 5, 6]})
+    pdf = df.to_df()
+
+    assert df.info() == pdf.info()
