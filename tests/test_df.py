@@ -262,8 +262,7 @@ def test_transpose_produces_bpd_frame():
 
 
 def test_df_info():
-    """Check that info from bpd shows same info as pd"""
-
+    """Check that info from babypandas shows same info as pandas."""
     df = bpd.DataFrame()
     df = df.assign(**{'foo': [1, 2, 3], 'bar': [4, 5, 6]})
     pdf = df.to_df()
