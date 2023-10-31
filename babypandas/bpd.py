@@ -70,6 +70,10 @@ class DataFrame(object):
         """Return the full pandas DataFrame."""
         return self._pd
 
+    def info(self):
+        """Show pandas DataFrame info."""
+        return self._pd.info()
+
     # Creation
     @classmethod
     def from_dict(cls, data):
