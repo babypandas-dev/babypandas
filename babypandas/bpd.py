@@ -809,12 +809,39 @@ class DataFrame(object):
             DataFrame with appended rows.
         """
         if not isinstance(other, DataFrame):
-            raise TypeError("Argument `other` must by a DataFrame")
+            raise TypeError("Argument `other` must be a DataFrame")
         if not isinstance(ignore_index, bool):
             raise TypeError("Argument `ignore_index` must be a boolean")
 
         f = _lift_to_pd(self._pd.append)
         return f(other=other, ignore_index=ignore_index)
+
+    def concat(self, objs, axis=0, join='outer', ignore_index=False):
+        """
+        Append rows of `other` together, returning a new object.
+
+        Columns in `other` that are not in the caller are added as new columns.
+
+        Parameters
+        ----------
+        objs : list of DataFrame or Series/dict-like object
+            The data to concatenate.
+        ignore_index : boolean, default False
+            If True, do not use the index labels.
+
+        Returns
+        -------
+        a_df : DataFrame
+            DataFrame with concatenated rows or columns.
+        """
+        for obj in objs:
+            if not isinstance(obj, DataFrame):
+                raise TypeError("Argument all 'objs' must be a DataFrame")
+        if not isinstance(ignore_index, bool):
+            raise TypeError("Argument `ignore_index` must be a boolean")
+
+        f = _lift_to_pd(self._pd.concat)
+        return f(objs=objs, axis=0, join='outer', ignore_index=ignore_index)
 
     # Plotting
     def plot(self, *args, **kwargs):

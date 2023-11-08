@@ -221,6 +221,20 @@ def test_append(dfs):
     assert pytest.raises(TypeError, df1.append, right=np.array([1, 2, 3]))
     assert pytest.raises(TypeError, df1.append, right=df5, ignore_index='foo')
 
+def test_concat(dfs):
+    df1, pdf1 = dfs['df1']
+    df5, pdf5 = dfs['df5']
+
+    # Concat along rows
+    assert_df_equal(pd.concat([df1, df5]), bpd.concat([pdf1, pdf5]))
+    assert_df_equal(pd.concat([df1, df5], ignore_index=True), bpd.concat([pdf1, pdf5], ignore_index=True))
+
+    # Add concat along columns?
+
+    # Exceptions
+    assert pytest.raises(TypeError, bpd.concat([df1, np.array([1, 2, 3])]))
+    assert pytest.raises(TypeError, bpd.concat([df1, df5], ignore_index='foo'))
+
 def test_to_numpy(dfs):
     for df, pdf in dfs.values():
         assert isinstance(df.to_numpy(), np.ndarray)
