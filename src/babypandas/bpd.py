@@ -2,7 +2,6 @@ from collections.abc import Iterable
 
 import numpy as np
 import pandas as pd
-
 from pandas.core import common as com
 from pandas.core import indexing
 
@@ -269,7 +268,9 @@ class DataFrame(object):
         if not isinstance(replace, bool):
             raise TypeError("Argument `replace` not a boolean")
         if not isinstance(random_state, int) and random_state != None:
-            raise TypeError("Argument `random_state` must be an integer or None")
+            raise TypeError(
+                "Argument `random_state` must be an integer or None"
+            )
         if n != None and n > self._pd.shape[0] and replace == False:
             raise ValueError(
                 "Cannot take a larger sample than length of DataFrame when `replace=False`"
@@ -417,7 +418,7 @@ class DataFrame(object):
             raise TypeError("Argument `func` must be a function")
         if axis not in [0, 1, "index", "columns"]:
             raise ValueError(
-                "Argument `axis` must be one of 0, 1 " '"index" or "columns"'
+                'Argument `axis` must be one of 0, 1 "index" or "columns"'
             )
 
         f = _lift_to_pd(self._pd.apply)
@@ -545,7 +546,7 @@ class DataFrame(object):
 
         Examples
         --------
-        >>> df =bpd.DataFrame(animal=['Falcon', 'Falcon', 'Parrot', 'Parrot'],
+        >>> df = bpd.DataFrame(animal=['Falcon', 'Falcon', 'Parrot', 'Parrot'],
         ...                   max_speed=[380, 370, 24, 26])
         >>> df.groupby('animal').mean()
                 max_speed
@@ -760,16 +761,24 @@ class DataFrame(object):
             raise ValueError(
                 "Argument `how` must be either 'left', 'right', 'outer', or 'inner'"
             )
-        if (on not in self._pd.columns or on not in right.columns) and on != None:
-            raise KeyError("Label '{}' not found in both DataFrames".format(on))
+        if (
+            on not in self._pd.columns or on not in right.columns
+        ) and on != None:
+            raise KeyError(
+                "Label '{}' not found in both DataFrames".format(on)
+            )
         if not using_index and (
             (left_on == None and right_on != None)
             or (left_on != None and right_on == None)
         ):
-            raise KeyError("Both `left_on` and `right_on` must be column labels")
+            raise KeyError(
+                "Both `left_on` and `right_on` must be column labels"
+            )
         if left_on != None and right_on != None:
             if left_on not in self._pd.columns:
-                raise KeyError("Label '{}' not found in left DataFrame".format(left_on))
+                raise KeyError(
+                    "Label '{}' not found in left DataFrame".format(left_on)
+                )
             if right_on not in right.columns:
                 raise KeyError(
                     "Label '{}' not found in right DataFrame".format(right_on)
@@ -785,32 +794,6 @@ class DataFrame(object):
             left_index=left_index,
             right_index=right_index,
         )
-
-    def append(self, other, ignore_index=False):
-        """
-        Append rows of `other` to the end of caller, returning a new object.
-
-        Columns in `other` that are not in the caller are added as new columns.
-
-        Parameters
-        ----------
-        other : DataFrame or Series/dict-like object, or list of these
-            The data to append.
-        ignore_index : boolean, default False
-            If True, do not use the index labels.
-
-        Returns
-        -------
-        a_df : DataFrame
-            DataFrame with appended rows.
-        """
-        if not isinstance(other, DataFrame):
-            raise TypeError("Argument `other` must by a DataFrame")
-        if not isinstance(ignore_index, bool):
-            raise TypeError("Argument `ignore_index` must be a boolean")
-
-        f = _lift_to_pd(self._pd.append)
-        return f(other=other, ignore_index=ignore_index)
 
     # Plotting
     def plot(self, *args, **kwargs):
@@ -1039,7 +1022,9 @@ class Series(object):
         if not isinstance(replace, bool):
             raise TypeError("Argument `replace` not a boolean")
         if not isinstance(random_state, int) and random_state != None:
-            raise TypeError("Argument `random_state` must be an integer or None")
+            raise TypeError(
+                "Argument `random_state` must be an integer or None"
+            )
         if n != None and n > self._pd.shape[0] and replace == False:
             raise ValueError(
                 "Cannot take a larger sample than length of DataFrame when `replace=False`"
@@ -1603,7 +1588,10 @@ def _lift_to_pd(func):
 
     def closure(*vargs, **kwargs):
         vargs = [x._pd if isinstance(x, types) else x for x in vargs]
-        kwargs = {k: x._pd if isinstance(x, types) else x for (k, x) in kwargs.items()}
+        kwargs = {
+            k: x._pd if isinstance(x, types) else x
+            for (k, x) in kwargs.items()
+        }
 
         a = func(*vargs, **kwargs)
         if isinstance(a, pd.DataFrame):

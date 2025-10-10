@@ -1,0 +1,26 @@
+[project]
+name = "babypandas"
+version = "1.0.0"
+description = "A restricted Pandas API for data science learners"
+readme = "README.md"
+requires-python = ">=3.11"
+authors = [
+    { name = "Sam Lau", email = "samlau95@gmail.com" },
+    { name = "Justin Eldridge", email = "jeldridge@ucsd.edu" },
+    { name = "Rod Albuyeh", email = "ralbuyeh@ucsd.edu" },
+    { name = "Aaron Fraenkel", email = "afraenkel@ucsd.edu" },
+    { name = "Darren Liu", email = "darrenliu17@gmail.com" },
+]
+dependencies = [
+    "numpy>2,<=2.3.3",
+    "pandas>2,<=2.3.3",
+]
+
+[build-system]
+requires = ["uv_build>=0.8.24,<0.9.0"]
+build-backend = "uv_build"
+
+[dependency-groups]
+dev = [
+    "pytest>=8.4.2",
+]

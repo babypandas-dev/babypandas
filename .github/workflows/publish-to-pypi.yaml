@@ -9,25 +9,23 @@ on:
       - master
   push:
     tags:
-      - '*'
+      - "*"
 
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@master
-      - name: Set up Python 3.10
-        uses: actions/setup-python@v3
+      - name: Set up Python 3.13
+        uses: actions/setup-python@v5
         with:
-          python-version: "3.10"
-      - name: Install Dependencies
-        run: pip install -r requirements.txt
-      - name: Install Package Locally
-        run: pip install .
-      - name: Install Test Dependencies
-        run: pip install pytest
+          python-version: "3.13"
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v4
+      - name: Sync dependencies
+        run: uv sync --all-groups
       - name: Run Tests
-        run: pytest tests
+        run: uv run pytest
 
   build-and-publish:
     needs: build-and-test
@@ -38,24 +36,16 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@master
-      - name: Set up Python 3.10
-        uses: actions/setup-python@v3
+      - name: Set up Python 3.13
+        uses: actions/setup-python@v5
         with:
-          python-version: "3.10"
-      - name: Install pypa/build
-        run: >-
-          python -m
-          pip install
-          build
-          --user
-      - name: Build a binary wheel and a source tarball
-        run: >-
-          python -m
-          build
-          --sdist
-          --wheel
-          --outdir dist/
-          .
+          python-version: "3.13"
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v4
+      - name: Sync dependencies
+        run: uv sync --all-groups
+      - name: Build package
+        run: uv build
       - name: Publish distribution 📦 to PyPI
         if: startsWith(github.ref, 'refs/tags')
         uses: pypa/gh-action-pypi-publish@release/v1
