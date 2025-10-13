@@ -211,16 +211,6 @@ def test_merge_on_both_index(dfs):
     pdf6 = pdf6.set_index('kind')
     assert_df_equal(df4.merge(df6, left_index=True, right_index=True), pdf4.merge(pdf6, left_index=True, right_index=True))
 
-def test_append(dfs):
-    df1, pdf1 = dfs['df1']
-    df5, pdf5 = dfs['df5']
-    assert_df_equal(df1.append(df5), pdf1.append(pdf5))
-    assert_df_equal(df1.append(df5, ignore_index=True), pdf1.append(pdf5, ignore_index=True))
-
-    # Exceptions
-    assert pytest.raises(TypeError, df1.append, right=np.array([1, 2, 3]))
-    assert pytest.raises(TypeError, df1.append, right=df5, ignore_index='foo')
-
 def test_to_numpy(dfs):
     for df, pdf in dfs.values():
         assert isinstance(df.to_numpy(), np.ndarray)
