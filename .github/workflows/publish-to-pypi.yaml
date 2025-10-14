@@ -17,11 +17,11 @@ jobs:
     steps:
       - uses: actions/checkout@master
       - name: Set up Python 3.13
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: "3.13"
       - name: Set up uv
-        uses: astral-sh/setup-uv@v4
+        uses: astral-sh/setup-uv@v6
       - name: Sync dependencies
         run: uv sync --all-groups
       - name: Run Tests
@@ -37,11 +37,11 @@ jobs:
     steps:
       - uses: actions/checkout@master
       - name: Set up Python 3.13
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: "3.13"
       - name: Set up uv
-        uses: astral-sh/setup-uv@v4
+        uses: astral-sh/setup-uv@v6
       - name: Sync dependencies
         run: uv sync --all-groups
       - name: Build package
