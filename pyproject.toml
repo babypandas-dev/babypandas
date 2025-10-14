@@ -1,6 +1,6 @@
 [project]
 name = "babypandas"
-version = "1.0.0"
+version = "1.0.0.dev0"
 description = "A restricted Pandas API for data science learners"
 readme = "README.md"
 requires-python = ">=3.11"
