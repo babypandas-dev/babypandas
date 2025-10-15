@@ -1,6 +1,6 @@
 [project]
 name = "babypandas"
-version = "1.0.0.dev0"
+version = "1.0.0.dev1"
 description = "A restricted Pandas API for data science learners"
 readme = "README.md"
 requires-python = ">=3.11"
@@ -12,8 +12,8 @@ authors = [
     { name = "Darren Liu", email = "darrenliu17@gmail.com" },
 ]
 dependencies = [
-    "numpy>2,<=2.3.3",
-    "pandas>2,<=2.3.3",
+    "numpy>=1,<=2.3.3",
+    "pandas>=2,<=2.3.3",
 ]
 
 [build-system]
