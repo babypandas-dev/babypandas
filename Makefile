@@ -1,4 +1,4 @@
-.PHONY: help push lab01 lab02 lab03 lab04 build serve clean
+.PHONY: help test build clean
 
 TODAY := $(shell date +"%m-%d")
 
